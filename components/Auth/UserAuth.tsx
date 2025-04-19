@@ -51,7 +51,7 @@ export default function UserAuthDropdown({ onClose, isFromHeader = false }: Auth
       className={`
         ${isFromHeader ? 
           'absolute right-0 top-full mt-2' : 
-          'fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm'
+          'fixed inset-0 flex items-center justify-center bg-black backdrop-blur-sm'
         }
         z-[1000]
       `}
@@ -67,13 +67,13 @@ export default function UserAuthDropdown({ onClose, isFromHeader = false }: Auth
       >
           <div className="w-full p-1 bg-[rgba(208,213,221,0.3)] rounded-xl flex mb-6">
           <button 
-            className={`flex-1 py-3 px-6 rounded-xl text-center text-sm font-bold font-['Manrope'] leading-[21px] ${!isSignUp ? 'bg-[#1C2534] text-white' : 'text-[#667085] hover:bg-gray-100'}`}
+            className={`flex-1 py-3 px-6 rounded-xl text-center text-sm font-bold font-['Manrope'] leading-[21px] ${!isSignUp ? 'bg-black text-white' : 'text-[#667085] hover:bg-gray-100'}`}
             onClick={() => setIsSignUp(false)}
           >
             Entrar
           </button>
           <button 
-            className={`flex-1 py-3 px-6 rounded-xl text-center text-sm font-bold font-['Manrope'] leading-[21px] ${isSignUp ? 'bg-[#1C2534] text-white' : 'text-[#667085] hover:bg-gray-100'}`}
+            className={`flex-1 py-3 px-6 rounded-xl text-center text-sm font-bold font-['Manrope'] leading-[21px] ${isSignUp ? 'bg-black text-white' : 'text-[#667085] hover:bg-gray-100'}`}
             onClick={() => setIsSignUp(true)}
           >
             Cadastrar
@@ -83,13 +83,13 @@ export default function UserAuthDropdown({ onClose, isFromHeader = false }: Auth
         {/* Campo Nome (apenas no cadastro) */}
         {isSignUp && (
           <div className="w-full mb-4">
-            <div className="w-full px-4 py-[14px] bg-white rounded-xl border border-[#D0D5DD]">
+            <div className="w-full px-4 py-[14px] bg-white rounded-xl border border-black">
               <input 
                 type="text" 
                 placeholder="Nome"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full text-[#667085] text-sm font-normal leading-[21px] outline-none bg-transparent"
+                className="w-full text-black text-sm font-normal leading-[21px] outline-none bg-transparent"
               />
             </div>
           </div>
@@ -97,26 +97,26 @@ export default function UserAuthDropdown({ onClose, isFromHeader = false }: Auth
         
         {/* Campo E-mail */}
         <div className="w-full mb-4">
-          <div className="w-full px-4 py-[14px] bg-white rounded-xl border border-[#D0D5DD]">
+          <div className="w-full px-4 py-[14px] bg-white rounded-xl border border-black">
             <input 
               type="email" 
               placeholder="E-mail"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full text-[#667085] text-sm font-normal  leading-[21px] outline-none bg-transparent"
+              className="w-full text-black text-sm font-normal  leading-[21px] outline-none bg-transparent"
             />
           </div>
         </div>
         
         {/* Campo Senha */}
         <div className="w-full mb-4">
-          <div className="w-full px-4 py-[14px] bg-white rounded-xl border border-[#D0D5DD] flex items-center">
+          <div className="w-full px-4 py-[14px] bg-white rounded-xl border border-black flex items-center">
             <input 
               type={showPassword ? "text" : "password"} 
               placeholder="Senha"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="flex-1 text-[#667085] text-sm font-normal leading-[21px] outline-none bg-transparent"
+              className="flex-1 text-black text-sm font-normal leading-[21px] outline-none bg-transparent"
             />
             <div className="ml-3 relative group">
             <div 
@@ -124,12 +124,12 @@ export default function UserAuthDropdown({ onClose, isFromHeader = false }: Auth
               onClick={() => setShowPassword(!showPassword)}
             >
               {showPassword ? (
-                <EyeSlashIcon className="w-4 h-4 text-[#667085]" />
+                <EyeSlashIcon className="w-4 h-4 text-black" />
               ) : (
-                <EyeIcon className="w-4 h-4 text-[#667085]" />
+                <EyeIcon className="w-4 h-4 text-black" />
               )}
             </div>
-            <span className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1 px-2 py-1 text-xs bg-gray-700 text-white rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+            <span className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1 px-2 py-1 text-xs bg-black text-white rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
               {showPassword ? "Ocultar senha" : "Mostrar senha"}
             </span>
           </div>
@@ -138,13 +138,13 @@ export default function UserAuthDropdown({ onClose, isFromHeader = false }: Auth
         
         {/* Botão Principal */}
         <button 
-          className="w-full py-4 px-8 bg-[#F43A01] rounded-xl text-white text-base font-normal leading-[24px] mb-6 hover:bg-[#E03501]"
+          className="w-full py-4 px-8 bg-black rounded-xl text-white text-base font-normal leading-[24px] mb-6 hover:bg-gray"
           onClick={() => isSignUp ? handleSignUp(name, email, password) : handleLogin(email, password)}
         >
           {isSignUp ? 'Cadastrar' : 'Entrar'}
         </button>
         {error && (
-          <div className="text-red-500 text-sm mb-4 text-center">
+          <div className="text-black text-sm mb-4 text-center">
             {error}
           </div>
         )}
