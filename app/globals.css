@@ -1,0 +1,103 @@
+@import 'tailwindcss';
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* O body usará por padrão a Manrope, definida na variável gerada pelo Next.js */
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-manrope), Arial, Helvetica, sans-serif;
+}
+
+/* Classe para quando você quiser usar a Urbanist em componentes específicos */
+.urbanist {
+  font-family: var(--font-urbanist), Arial, Helvetica, sans-serif;
+}
+
+button {
+  cursor: pointer;
+  transition: all 200ms ease;
+  outline: none;
+}
+
+input {
+  background-color: transparent;
+  outline: none;
+}
+
+.bg-blue {
+  background-color: #1c2534;
+}
+
+.button-blue {
+  background-color: #1c2534;
+  border: #667085 1px solid;
+}
+
+.color-orange {
+  color: #f43a01;
+}
+
+.button-orange {
+  background-color: #f43a01;
+  border: #f43a01 1px solid;
+  color: white;
+}
+
+.color-primary {
+  color: #0c111d;
+}
+
+.color-secondary {
+  color: #667085;
+}
+
+.ring-orange:focus {
+  box-shadow: 0 0 0 1px #f43a01;
+}
+
+.border-primary {
+  border-color: #d0d5dd;
+}
+
+.debug {
+  border: 1px solid red;
+  border-radius: 4px;
+}
+
+.fade-enter {
+  opacity: 0;
+}
+.fade-enter-active {
+  opacity: 1;
+  transition: opacity 200ms;
+}
+.fade-exit {
+  opacity: 1;
+}
+.fade-exit-active {
+  opacity: 0;
+  transition: opacity 200ms;
+}
+
+.text-blue {
+  color: #0c111d;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none; /* for Internet Explorer, Edge */
+  scrollbar-width: none; /* for Firefox */
+}

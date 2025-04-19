@@ -1,0 +1,58 @@
+'use client';
+import { useState } from 'react';
+import { toast } from 'react-toastify';
+import { useAuth } from '@/context/AuthContext';
+
+interface AuthModalProps {
+  onClose?: () => void;
+}
+
+export default function UserAuthOptionsDropdown({ onClose }: AuthModalProps) {
+  const { logout } = useAuth();
+  const [error, setError] = useState<string | null>(null);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      if (onClose) onClose();
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Erro ao efetuar login');
+    }
+  };
+
+  const handleClick = () => {
+    toast.info('Esta função está em desenvolvimento!');
+  };
+
+  return (
+    <div className="absolute right-0 top-full mt-2 z-[1000]">
+      <div 
+        className="p-4 bg-white shadow-[0px_30px_67px_rgba(0,0,0,0.05)] rounded-xl border border-[#D0D5DD] w-[200px]"
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="flex flex-col space-y-2">
+          <button
+            className="w-full text-left px-3 py-2 text-[#667085] text-sm font-normal leading-[21px] hover:bg-gray-100 rounded-md transition-colors"
+            onClick={handleClick}
+          >
+            Minha conta
+          </button>
+          
+          <button
+            className="w-full text-left px-3 py-2 text-[#667085] text-sm font-normal leading-[21px] hover:bg-gray-100 rounded-md transition-colors"
+            onClick={handleClick}
+          >
+            Configurações
+          </button>
+          
+          <button
+            className="w-full text-left px-3 py-2 text-[#667085] text-sm font-normal leading-[21px] hover:bg-gray-100 rounded-md transition-colors"
+            onClick={handleLogout}
+          >
+            Sair
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
