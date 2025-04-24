@@ -20,12 +20,12 @@ export default function Header() {
   const pathname = usePathname();
   const [inputValue, setInputValue] = useState('');
   const router = useRouter();
+  const [selectedCategory, setSelectedCategory] = useState('Moradias');
 
-  const validTypes = ['explorar', 'hospedagens', 'o-que-fazer', 'restaurantes', 'voos'];
+  const validTypes = ['moradias', 'eventos', 'esportes'];
   const segments = pathname?.split('/').filter(Boolean);
   const firstSegment = segments?.[0];
 
-  // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (userDropdownRef.current && !userDropdownRef.current.contains(event.target as Node)) {
@@ -49,10 +49,10 @@ export default function Header() {
     
     const trimmed = inputValue.trim();
     if (trimmed) {
-      // Substitui espaços por hífens e então codifica
       const formattedSearch = trimmed.replace(/\s+/g, '-');
       const encodedSearch = encodeURIComponent(formattedSearch);
-      router.push(`/explorar/${encodedSearch}`);
+      const lowercaseCategory = selectedCategory.toLowerCase();
+      router.push(`/${lowercaseCategory}/${encodedSearch}`);
     }
   };
   
@@ -60,10 +60,8 @@ export default function Header() {
     setInputValue(e.target.value);
   };
 
-  const [selectedCategory, setSelectedCategory] = useState('Moradias');
-
   return (
-    <header className="header w-full bg-white text-white shadow-md flex h-16 items-center gap-8 px-20 self-stretch text-sm font-normal ">
+    <header className="header w-full bg-gray-300 text-white shadow-md flex h-16 items-center gap-8 px-20 self-stretch text-sm font-normal ">
       <button onClick={() => router.push('/home')}>
         <HomeIcon className="w-5 h-5 text-black"/>
       </button>

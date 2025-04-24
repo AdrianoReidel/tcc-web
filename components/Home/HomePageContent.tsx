@@ -1,20 +1,11 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { navigationOptions } from '@/data/navigationOptions';
+import React from 'react';
 import PropertyCarousel from '../PropertyCarousel';
 import ExperienceCarousel from '../ExperienceCarousel';
 import RestaurantCarousel from '../RestaurantCarousel';
 
 export default function HomePage() {
-  const [selectedOption, setSelectedOption] = useState('explorar');
-
-  useEffect(() => {
-  }, [selectedOption]);
-
-  const selectedCategory = navigationOptions.find((option) => option.value === selectedOption);
-  const images = selectedCategory?.images || [];
-
   const properties = [
     {
       image: '/images/hotel-teste.png',

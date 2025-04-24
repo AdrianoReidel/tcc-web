@@ -1,29 +1,18 @@
 'use client';
 
-import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { navigationOptions } from '@/data/navigationOptions';
+import React, { useState, useEffect, useRef } from 'react';
 import PropertyCarousel from '../PropertyCarousel';
-import ExperienceCarousel from '../ExperienceCarousel';
-import RestaurantCarousel from '../RestaurantCarousel';
-import Link from 'next/link';
-import { ChevronRightIcon, MapIcon } from '@heroicons/react/24/outline';
-import { toast } from 'react-toastify';
-import Image from 'next/image';
-import { usePathname } from 'next/navigation';
 
 interface ExplorarPageContentProps {
   localPesquisado: string;
   tipoPesquisado: string;
 }
 
-export default function ExplorarPageContent({ localPesquisado, tipoPesquisado }: ExplorarPageContentProps) {
+export default function ExplorarPageContent({ tipoPesquisado, localPesquisado }: ExplorarPageContentProps) {
   const local = decodeURIComponent(localPesquisado);
   const [selectedOption, setSelectedOption] = useState<string>('explorar');
-  const [navWidth, setNavWidth] = useState('auto');
   const navRef = useRef<HTMLDivElement>(null);
-  const [isFixed, setIsFixed] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [selectedOptionCombobox, setSelectedOptionCombobox] = useState('Recomendado');
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Fecha o dropdown se clicar fora
@@ -43,36 +32,7 @@ export default function ExplorarPageContent({ localPesquisado, tipoPesquisado }:
     };
   }, [isDropdownOpen]);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      if (navRef.current) {
-        const offsetTop = navRef.current.offsetTop;
-        const scrollTop = window.scrollY;
-
-        // Se rolar mais de 180px, fixa a barra
-        if (scrollTop > 180) {
-          setIsFixed(true);
-        } else {
-          setIsFixed(false);
-        }
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  useEffect(() => {
-    if (navRef.current) {
-      const width = navRef.current.offsetWidth;
-      setNavWidth(`${width}px`);
-    }
-  }, []);
-
   useEffect(() => {}, [selectedOption]);
-
-  const selectedCategory = navigationOptions.find((option) => option.value === selectedOption);
-  const images = selectedCategory?.images || [];
 
   const properties = [
     {
@@ -165,16 +125,18 @@ export default function ExplorarPageContent({ localPesquisado, tipoPesquisado }:
     },
   ];
 
+  const capitalizeFirstLetter = (str: string) => {
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+  };
+  
   return (
     <div className="w-full flex flex-col min-h-screen bg-[#1C2534] text-white">
       <section className="px-20 pt-20 bg-white text-gray-900">
         <div className="pt-14">
-          {/* Breadcrumb */}
           <div className="inline-flex flex-col justify-start items-start gap-2">
-            {/* Título e Resultados */}
             <div className="inline-flex justify-start items-center gap-4">
               <div className="justify-center text-gray-900 text-[40px] font-semibold font-['Urbanist'] leading-[52px]">
-                Moradias em {(local).replace(/-/g, ' ')}
+                {capitalizeFirstLetter(tipoPesquisado)} em {(local).replace(/-/g, ' ')}
               </div>
             </div>
           </div>
@@ -183,13 +145,16 @@ export default function ExplorarPageContent({ localPesquisado, tipoPesquisado }:
       {/* Conteúdo Dinâmico */}
       <div className="flex-1 bg-white">
         <section className="px-20 bg-white">
-          <div className="pt-14">
-            <PropertyCarousel properties={properties} text="" />
-          </div>
-        </section>
-        <section className="px-20 bg-white">
-          <div className="pt-14">
-            <div className="border-t border-[#D0D5DD]" />
+          <div className="pt-5">
+            {tipoPesquisado === 'moradias' && (
+              <PropertyCarousel properties={properties} text="" />
+            )}
+            {tipoPesquisado === 'eventos' && (
+              <PropertyCarousel properties={properties} text="" />
+            )}
+            {tipoPesquisado === 'esportes' && (
+              <PropertyCarousel properties={properties} text="" />
+            )}
           </div>
         </section>
       </div>
