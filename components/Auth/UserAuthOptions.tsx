@@ -15,6 +15,7 @@ export default function UserAuthOptionsDropdown({ onClose }: AuthModalProps) {
     try {
       await logout();
       if (onClose) onClose();
+      toast.success('Você saiu da sua conta!');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Erro ao efetuar login');
     }
@@ -35,21 +36,21 @@ export default function UserAuthOptionsDropdown({ onClose }: AuthModalProps) {
             className="w-full text-left px-3 py-2 text-[#667085] text-sm font-normal leading-[21px] hover:bg-gray-100 rounded-md transition-colors"
             onClick={handleClick}
           >
-            Minha conta
+            Minhas reservas
           </button>
-          
+
           <button
             className="w-full text-left px-3 py-2 text-[#667085] text-sm font-normal leading-[21px] hover:bg-gray-100 rounded-md transition-colors"
             onClick={handleClick}
           >
-            Configurações
+            Minhas propriedades
           </button>
           
           <button
             className="w-full text-left px-3 py-2 text-[#667085] text-sm font-normal leading-[21px] hover:bg-gray-100 rounded-md transition-colors"
             onClick={handleLogout}
           >
-            Sair
+            Sair da conta
           </button>
         </div>
       </div>

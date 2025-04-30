@@ -33,10 +33,10 @@ export default function ExplorarPageContent({ tipoPesquisado, localPesquisado }:
   }, [isDropdownOpen]);
 
   useEffect(() => {}, [selectedOption]);
-
+  
   const properties = [
     {
-      image: '/images/hotel-teste.png',
+      image: '/images/casa1.png',
       name: 'Hotel Atlântico Prime',
       location: 'Florianópolis, Santa Catarina',
       rating: 4.9,
@@ -47,7 +47,7 @@ export default function ExplorarPageContent({ tipoPesquisado, localPesquisado }:
       hasBreakfast: true,
     },
     {
-      image: '/images/denis.jpg',
+      image: '/images/casa2.png',
       name: 'Beira Mar Hotel',
       location: 'Florianópolis, Santa Catarina',
       rating: 4.9,
@@ -58,7 +58,7 @@ export default function ExplorarPageContent({ tipoPesquisado, localPesquisado }:
       hasBreakfast: false,
     },
     {
-      image: '/images/francis.jpg',
+      image: '/images/casa3.png',
       name: 'Pousada Pôr do Sol',
       location: 'Florianópolis, Santa Catarina',
       rating: 4.9,
@@ -69,7 +69,7 @@ export default function ExplorarPageContent({ tipoPesquisado, localPesquisado }:
       hasBreakfast: true,
     },
     {
-      image: '/images/baldasso.jpg',
+      image: '/images/casa4.png',
       name: 'Hotel Porto Belo, SC',
       location: 'Porto Belo, Santa Catarina',
       rating: 4.9,
@@ -80,7 +80,7 @@ export default function ExplorarPageContent({ tipoPesquisado, localPesquisado }:
       hasBreakfast: false,
     },
     {
-      image: '/images/hotel-teste.png',
+      image: '/images/casa1.png',
       name: 'Hotel Atlântico Prime',
       location: 'Florianópolis, Santa Catarina',
       rating: 4.9,
@@ -91,7 +91,7 @@ export default function ExplorarPageContent({ tipoPesquisado, localPesquisado }:
       hasBreakfast: true,
     },
     {
-      image: '/images/denis.jpg',
+      image: '/images/casa2.png',
       name: 'Beira Mar Hotel',
       location: 'Florianópolis, Santa Catarina',
       rating: 4.9,
@@ -102,7 +102,7 @@ export default function ExplorarPageContent({ tipoPesquisado, localPesquisado }:
       hasBreakfast: false,
     },
     {
-      image: '/images/francis.jpg',
+      image: '/images/casa3.png',
       name: 'Pousada Pôr do Sol',
       location: 'Florianópolis, Santa Catarina',
       rating: 4.9,
@@ -113,7 +113,7 @@ export default function ExplorarPageContent({ tipoPesquisado, localPesquisado }:
       hasBreakfast: true,
     },
     {
-      image: '/images/baldasso.jpg',
+      image: '/images/casa4.png',
       name: 'Hotel Porto Belo, SC',
       location: 'Porto Belo, Santa Catarina',
       rating: 4.9,
@@ -121,6 +121,188 @@ export default function ExplorarPageContent({ tipoPesquisado, localPesquisado }:
       originalPrice: 500,
       discountedPrice: 400,
       discount: -20,
+      hasBreakfast: false,
+    },
+  ];
+
+  const events = [
+    {
+      image: '/images/evento1.jpeg',
+      name: 'Espaço para casamento/bodas',
+      location: 'Santo Ângelo, Rio Grande do Sul',
+      rating: 4.5,
+      reviews: 3765,
+      originalPrice: 4500,
+      discountedPrice: 4050,
+      discount: -10,
+      hasBreakfast: false,
+    },
+    {
+      image: '/images/evento2.png',
+      name: 'Casa de Eventos Luxo Dourado',
+      location: 'Porto Alegre, Rio Grande do Sul',
+      rating: 4.7,
+      reviews: 2980,
+      originalPrice: 5200,
+      discountedPrice: 4680,
+      discount: -10,
+      hasBreakfast: false,
+    },
+    {
+      image: '/images/evento3.png',
+      name: 'Casa de Shows Pedra Alta',
+      location: 'Gramado, Rio Grande do Sul',
+      rating: 4.8,
+      reviews: 4120,
+      originalPrice: 6000,
+      discountedPrice: 5100,
+      discount: -15,
+      hasBreakfast: false,
+    },
+    {
+      image: '/images/evento4.jpg',
+      name: 'Casa Colonial para Festas e Eventos',
+      location: 'Caxias do Sul, Rio Grande do Sul',
+      rating: 4.4,
+      reviews: 2310,
+      originalPrice: 3500,
+      discountedPrice: 2975,
+      discount: -15,
+      hasBreakfast: true,
+    },
+    {
+      image: '/images/evento1.jpeg',
+      name: 'Espaço para casamento/bodas',
+      location: 'Santo Ângelo, Rio Grande do Sul',
+      rating: 4.5,
+      reviews: 3765,
+      originalPrice: 4500,
+      discountedPrice: 4050,
+      discount: -10,
+      hasBreakfast: false,
+    },
+    {
+      image: '/images/evento2.png',
+      name: 'Casa de Eventos Luxo Dourado',
+      location: 'Porto Alegre, Rio Grande do Sul',
+      rating: 4.7,
+      reviews: 2980,
+      originalPrice: 5200,
+      discountedPrice: 4680,
+      discount: -10,
+      hasBreakfast: false,
+    },
+    {
+      image: '/images/evento3.png',
+      name: 'Casa de Shows Pedra Alta',
+      location: 'Gramado, Rio Grande do Sul',
+      rating: 4.8,
+      reviews: 4120,
+      originalPrice: 6000,
+      discountedPrice: 5100,
+      discount: -15,
+      hasBreakfast: false,
+    },
+    {
+      image: '/images/evento4.jpg',
+      name: 'Casa Colonial para Festas e Eventos',
+      location: 'Caxias do Sul, Rio Grande do Sul',
+      rating: 4.4,
+      reviews: 2310,
+      originalPrice: 3500,
+      discountedPrice: 2975,
+      discount: -15,
+      hasBreakfast: true,
+    },
+  ];
+
+  const sports = [
+    {
+      image: '/images/quadra1.jpeg',
+      name: 'Quadra Society - Centro',
+      location: 'Santo Ângelo, Rio Grande do Sul',
+      rating: 4.9,
+      reviews: 1765,
+      originalPrice: 350,
+      discountedPrice: 240,
+      discount: -30,
+      hasBreakfast: false,
+    },
+    {
+      image: '/images/quadra2.jpeg',
+      name: 'Campo de Futebol Society - Praia',
+      location: 'Florianópolis, Santa Catarina',
+      rating: 4.7,
+      reviews: 1350,
+      originalPrice: 450,
+      discountedPrice: 360,
+      discount: -20,
+      hasBreakfast: false,
+    },
+    {
+      image: '/images/quadra4.jpeg',
+      name: 'Quadra de Padel da areia',
+      location: 'Porto Alegre, Rio Grande do Sul',
+      rating: 4.6,
+      reviews: 980,
+      originalPrice: 280,
+      discountedPrice: 224,
+      discount: -20,
+      hasBreakfast: false,
+    },
+    {
+      image: '/images/quadra3.jpeg',
+      name: 'Quadra Poliesportiva - Academia',
+      location: 'Curitiba, Paraná',
+      rating: 4.4,
+      reviews: 2100,
+      originalPrice: 300,
+      discountedPrice: 270,
+      discount: -10,
+      hasBreakfast: false,
+    },
+    {
+      image: '/images/quadra1.jpeg',
+      name: 'Quadra Society - Centro',
+      location: 'Santo Ângelo, Rio Grande do Sul',
+      rating: 4.9,
+      reviews: 1765,
+      originalPrice: 350,
+      discountedPrice: 240,
+      discount: -30,
+      hasBreakfast: false,
+    },
+    {
+      image: '/images/quadra2.jpeg',
+      name: 'Campo de Futebol Society - Praia',
+      location: 'Florianópolis, Santa Catarina',
+      rating: 4.7,
+      reviews: 1350,
+      originalPrice: 450,
+      discountedPrice: 360,
+      discount: -20,
+      hasBreakfast: false,
+    },
+    {
+      image: '/images/quadra4.jpeg',
+      name: 'Quadra de Padel da areia',
+      location: 'Porto Alegre, Rio Grande do Sul',
+      rating: 4.6,
+      reviews: 980,
+      originalPrice: 280,
+      discountedPrice: 224,
+      discount: -20,
+      hasBreakfast: false,
+    },
+    {
+      image: '/images/quadra3.jpeg',
+      name: 'Quadra Poliesportiva - Academia',
+      location: 'Curitiba, Paraná',
+      rating: 4.4,
+      reviews: 2100,
+      originalPrice: 300,
+      discountedPrice: 270,
+      discount: -10,
       hasBreakfast: false,
     },
   ];
@@ -150,10 +332,10 @@ export default function ExplorarPageContent({ tipoPesquisado, localPesquisado }:
               <PropertyCarousel properties={properties} text="" />
             )}
             {tipoPesquisado === 'eventos' && (
-              <PropertyCarousel properties={properties} text="" />
+              <PropertyCarousel properties={events} text="" />
             )}
             {tipoPesquisado === 'esportes' && (
-              <PropertyCarousel properties={properties} text="" />
+              <PropertyCarousel properties={sports} text="" />
             )}
           </div>
         </section>
