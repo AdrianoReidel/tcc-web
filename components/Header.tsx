@@ -115,27 +115,38 @@ export default function Header() {
           </button>
         </div>
       </div>
-        {/* User Login/Options Modal */}
-        <div className="relative ml-4" ref={userDropdownRef}>
-          <div className="flex items-center">
-            <div
-              className="cursor-pointer z-10"
-              onClick={() => {
-                if (isLogged) {
-                  setIsUserOptionsDropdownOpen((prev) => !prev);
-                  setIsUserDropdownOpen(false);
-                } else {
-                  setIsUserDropdownOpen((prev) => !prev);
-                  setIsUserOptionsDropdownOpen(false);
-                }
-              }}
-            >
-              <Image src="/icons/user-login.svg" alt="Login" width={40} height={40} />
-            </div>
-            {isUserDropdownOpen && <AuthModal onClose={() => setIsUserDropdownOpen(false)} isFromHeader={true} />}
-            {isUserOptionsDropdownOpen && <AuthOptionsModal onClose={() => setIsUserOptionsDropdownOpen(false)} />}
+
+      {/* Botão de Cadastro */}
+      <div className="ml-4">
+        <button
+          onClick={() => router.push('/cadastrar')}
+          className="h-11 px-4 rounded-[999px] border-2 border-black text-black hover:bg-gray-100 transition-all duration-300 text-sm font-medium"
+        >
+          Cadastrar nova Propriedade/Espaço
+        </button>
+      </div>
+
+      {/* User Login/Options Modal */}
+      <div className="relative ml-4" ref={userDropdownRef}>
+        <div className="flex items-center">
+          <div
+            className="cursor-pointer z-10"
+            onClick={() => {
+              if (isLogged) {
+                setIsUserOptionsDropdownOpen((prev) => !prev);
+                setIsUserDropdownOpen(false);
+              } else {
+                setIsUserDropdownOpen((prev) => !prev);
+                setIsUserOptionsDropdownOpen(false);
+              }
+            }}
+          >
+            <Image src="/icons/user-login.svg" alt="Login" width={40} height={40} />
           </div>
+          {isUserDropdownOpen && <AuthModal onClose={() => setIsUserDropdownOpen(false)} isFromHeader={true} />}
+          {isUserOptionsDropdownOpen && <AuthOptionsModal onClose={() => setIsUserOptionsDropdownOpen(false)} />}
         </div>
+      </div>
     </header>
   );
 }
