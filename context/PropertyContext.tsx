@@ -4,7 +4,7 @@ import React, { createContext, useContext, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/axios';
 
-// Definir o tipo dos dados esperados para o registro (baseado na CreatePropertyDto)
+// Definir o tipo dos dados do formulário para o cadastro
 interface PropertyData {
   title: string;
   description: string;
@@ -15,13 +15,29 @@ interface PropertyData {
   state: string;
   country: string;
   zipCode: string;
-  pricePerUnit: string; // Será convertido para número antes de enviar
+  pricePerUnit: string;
   operatingMode?: string;
+}
+
+// Definir o tipo para a lista de propriedades retornada pela API (baseado na PropertyListDto)
+interface PropertyListItem {
+  id: string;
+  title: string;
+  description: string;
+  createdAt: string;
+  hostId: string;
+  pricePerUnit: number;
+  operatingMode?: string;
+  type: string;
+  city: string;
+  state: string;
 }
 
 // Definir o tipo do contexto
 interface PropertyContextType {
   register: (dados: PropertyData) => Promise<void>;
+  getAllProperties: (search?: string, location?: string, type?: string) => Promise<PropertyListItem[]>;
+  searchProperties: (location: string, type: string) => Promise<PropertyListItem[]>;
 }
 
 // Criar o contexto
@@ -42,31 +58,27 @@ export function PropertyProvider({ children }: { children: React.ReactNode }) {
 
   const register = useCallback(async (dados: PropertyData) => {
     try {
-      // Mapear os valores de type para o formato esperado pela API
       const typeMap: { [key: string]: string } = {
         MORADIA: 'HOUSING',
         EVENTO: 'EVENTS',
         ESPORTE: 'SPORTS',
       };
 
-      // Mapear os valores de operatingMode para o formato esperado pela API
       const operatingModeMap: { [key: string]: string } = {
         'Por Noite': 'PER_NIGHT',
         'Por Hora': 'PER_HOUR',
         'Por Dia': 'PER_DAY',
       };
 
-      // Converter pricePerUnit para número
       const pricePerUnit = parseFloat(dados.pricePerUnit);
       if (isNaN(pricePerUnit)) {
         throw new Error('O preço por unidade deve ser um número válido.');
       }
 
-      // Preparar os dados para enviar à API
       const dataToSend = {
         title: dados.title,
         description: dados.description,
-        type: typeMap[dados.type] || dados.type, // Mapear o tipo
+        type: typeMap[dados.type] || dados.type,
         status: dados.status,
         street: dados.street,
         city: dados.city,
@@ -74,20 +86,48 @@ export function PropertyProvider({ children }: { children: React.ReactNode }) {
         country: dados.country,
         zipCode: dados.zipCode,
         pricePerUnit: pricePerUnit,
-        operatingMode: operatingModeMap[dados.operatingMode || ''] || dados.operatingMode, // Mapear o modo de operação
+        operatingMode: operatingModeMap[dados.operatingMode || ''] || dados.operatingMode,
       };
 
       await api.post('/property', dataToSend, { skipAuthRefresh: true });
-      router.push('/'); // Redirecionar após o cadastro (ajuste o caminho conforme necessário)
+      router.push('/');
     } catch (error: any) {
       console.error('Erro ao cadastrar propriedade:', error);
       throw new Error(error.response?.data?.message || 'Erro ao cadastrar a propriedade.');
     }
   }, [router]);
 
+  const getAllProperties = useCallback(async (search?: string, location?: string, type?: string): Promise<PropertyListItem[]> => {
+    try {
+      const response = await api.get('/property', {
+        params: { search, location, type },
+        skipAuthRefresh: true,
+      });
+      return response.data.data;
+    } catch (error: any) {
+      console.error('Erro ao buscar propriedades:', error);
+      throw new Error(error.response?.data?.message || 'Erro ao buscar propriedades.');
+    }
+  }, []); 
+
+  const searchProperties = useCallback(async (location: string, type: string): Promise<PropertyListItem[]> => {
+    try {
+      const response = await api.get('/property/search', {
+        params: { location, type },
+        skipAuthRefresh: true,
+      });
+      return response.data;
+    } catch (error: any) {
+      console.error('Erro ao buscar propriedades filtradas:', error);
+      throw new Error(error.response?.data?.message || 'Erro ao buscar propriedades filtradas.');
+    }
+  }, []);
+
   return (
-    <PropertyContext.Provider value={{ register }}>
+    <PropertyContext.Provider value={{ register, getAllProperties, searchProperties }}>
       {children}
     </PropertyContext.Provider>
   );
 }
+
+export default PropertyContext;

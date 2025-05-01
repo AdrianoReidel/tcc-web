@@ -58,6 +58,7 @@ const PropertyCarousel = ({ properties, text }) => {
           {properties.map((property, index) => (
             <div key={index} className="flex-shrink-0 snap-start">
               <PropertyCard
+                id={property.id}
                 image={property.image}
                 name={property.name}
                 location={property.location}
