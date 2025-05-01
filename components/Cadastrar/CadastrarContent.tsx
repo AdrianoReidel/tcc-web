@@ -40,7 +40,7 @@ export default function CadastrarPage() {
           placeholder="Título"
           value={formData.title}
           onChange={handleChange}
-          className="p-3 rounded-md bg-[#2B3A4B] border border-gray-500 placeholder-black"
+          className="p-3 rounded-md bg-[#2B3A4B] border border-gray-500 placeholder-gray"
           required
         />
 
@@ -50,7 +50,7 @@ export default function CadastrarPage() {
           placeholder="Rua"
           value={formData.street}
           onChange={handleChange}
-          className="p-3 rounded-md bg-[#2B3A4B] border border-gray-500 placeholder-black"
+          className="p-3 rounded-md bg-[#2B3A4B] border border-gray-500 placeholder-gray"
           required
         />
 
@@ -60,7 +60,7 @@ export default function CadastrarPage() {
           placeholder="Cidade"
           value={formData.city}
           onChange={handleChange}
-          className="p-3 rounded-md bg-[#2B3A4B] border border-gray-500 placeholder-black"
+          className="p-3 rounded-md bg-[#2B3A4B] border border-gray-500 placeholder-gray"
           required
         />
 
@@ -70,7 +70,7 @@ export default function CadastrarPage() {
           placeholder="Estado"
           value={formData.state}
           onChange={handleChange}
-          className="p-3 rounded-md bg-[#2B3A4B] border border-gray-500 placeholder-black"
+          className="p-3 rounded-md bg-[#2B3A4B] border border-gray-500 placeholder-gray"
           required
         />
 
@@ -80,7 +80,7 @@ export default function CadastrarPage() {
           placeholder="País"
           value={formData.country}
           onChange={handleChange}
-          className="p-3 rounded-md bg-[#2B3A4B] border border-gray-500 placeholder-black"
+          className="p-3 rounded-md bg-[#2B3A4B] border border-gray-500 placeholder-gray"
           required
         />
 
@@ -90,7 +90,7 @@ export default function CadastrarPage() {
           placeholder="CEP"
           value={formData.zipCode}
           onChange={handleChange}
-          className="p-3 rounded-md bg-[#2B3A4B] border border-gray-500 placeholder-black"
+          className="p-3 rounded-md bg-[#2B3A4B] border border-gray-500 placeholder-gray"
           required
         />
 
@@ -101,7 +101,7 @@ export default function CadastrarPage() {
           value={formData.pricePerUnit}
           onChange={handleChange}
           step="0.01"
-          className="p-3 rounded-md bg-[#2B3A4B] border border-gray-500 placeholder-black"
+          className="p-3 rounded-md bg-[#2B3A4B] border border-gray-500 placeholder-gray"
           required
         />
 
@@ -109,7 +109,7 @@ export default function CadastrarPage() {
           name="type"
           value={formData.type}
           onChange={handleChange}
-          className="p-3 rounded-md bg-white border border-gray-500 text-black"
+          className="p-3 rounded-md bg-white border border-gray-500 text-gray"
         >
           <option value="MORADIA">Moradia</option>
           <option value="EVENTO">Evento</option>
@@ -120,7 +120,7 @@ export default function CadastrarPage() {
           name="operatingMode"
           value={formData.operatingMode}
           onChange={handleChange}
-          className="p-3 rounded-md bg-white border border-gray-500 text-black"
+          className="p-3 rounded-md bg-white border border-gray-500 text-gray"
         >
           <option value="Por Hora">Por Hora</option>
           <option value="Dia">Por Dia</option>
@@ -131,7 +131,7 @@ export default function CadastrarPage() {
           name="status"
           value={formData.status}
           onChange={handleChange}
-          className="p-3 rounded-md bg-white border border-gray-500 text-black"
+          className="p-3 rounded-md bg-white border border-gray-500 text-gray"
         >
           <option value="AVAILABLE">Disponível</option>
           <option value="UNAVAILABLE">Indisponível</option>
@@ -143,14 +143,14 @@ export default function CadastrarPage() {
           value={formData.description}
           onChange={handleChange}
           rows={4}
-          className="col-span-1 md:col-span-2 p-3 rounded-md bg-white border border-gray-500 placeholder-black"
+          className="col-span-1 md:col-span-2 p-3 rounded-md bg-white border border-gray-500 placeholder-gray"
           required
         />
 
         <div className="col-span-1 md:col-span-2 flex justify-end">
           <button
             type="submit"
-            className="h-11 px-6 rounded-[999px] border-2 border-black text-black bg-transparent"
+            className="h-11 px-6 mb-5 rounded-[999px] border-2 border-black text-black bg-transparent"
           >
             Cadastrar
           </button>

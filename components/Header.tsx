@@ -20,7 +20,7 @@ export default function Header() {
   const pathname = usePathname();
   const [inputValue, setInputValue] = useState('');
   const router = useRouter();
-  const [selectedCategory, setSelectedCategory] = useState('Moradias');
+  const [selectedCategory, setSelectedCategory] = useState('');
 
   const validTypes = ['moradias', 'eventos', 'esportes'];
   const segments = pathname?.split('/').filter(Boolean);
@@ -62,60 +62,68 @@ export default function Header() {
 
   return (
     <header className="header w-full bg-gray-300 text-white shadow-md flex h-16 items-center gap-8 px-20 self-stretch text-sm font-normal ">
-      <button onClick={() => router.push('/home')}>
-        <HomeIcon className="w-5 h-5 text-black"/>
+      <button
+        onClick={() => {
+          router.push('/home');
+          setSelectedCategory('');
+        }}
+      >
+        <HomeIcon className="w-5 h-5 text-black" />
       </button>
-      {/* Category Buttons */}
-      <div className="flex gap-2">
-        {['Moradias', 'Eventos', 'Esportes'].map((category) => (
-          <button
-            key={category}
-            onClick={() => setSelectedCategory(category)}
-            className={`h-11 px-4 rounded-[999px] border-2 transition-all duration-300 text-sm font-medium ${
-              selectedCategory === category 
-                ? 'border-black bg-black text-white' 
-                : 'border-[#000000] text-[#000000] hover:bg-gray-100'
-            }`}
-          >
-            {category}
-          </button>
-        ))}
-      </div>
-
       {/* Search Bar */}
       <div className="flex-1 w-full">
-        <div className="relative flex items-center">
+        <div className="relative flex items-center w-full h-11 border border-[#000000] rounded-[999px] focus-within:ring-1 focus-within:ring-[#000000] transition-all duration-300">
+          {/* Input */}
           <input
             ref={inputRef}
             type="text"
             value={inputValue}
             onChange={handleInputChange}
-            placeholder="Procure por moradias, espaços para eventos ou esportes..."
-            className={`w-full h-11 rounded-[999px] border border-[#000000] placeholder-[#000000] text-[#000000] focus:ring-1 focus:ring-[#000000] transition-all duration-300 pl-6 text-sm font-normal ${
-              isInputFocused ? 'pr-40' : 'pr-16'
-            }`}
+            placeholder="Digite uma cidade..."
+            className="flex-1 h-full pl-6 pr-2 text-sm font-normal text-[#000000] placeholder-[#000000] bg-transparent focus:outline-none"
             onFocus={() => setIsInputFocused(true)}
             onBlur={() => setIsInputFocused(false)}
           />
 
-          {isInputFocused && (
-            <button
-              onMouseDown={handleClearFocus}
-              className="absolute right-12 p-2 rounded-full flex items-center justify-center z-10"
-            >
-              <XMarkIcon className="w-5 h-5 text-[#000000]" />
-            </button>
-          )}
+          {/* Category Buttons and Magnifying Glass */}
+          <div className="flex items-center h-full gap-1.5 pr-5">
+            {/* Category Buttons */}
+            {['Moradias', 'Eventos', 'Esportes'].map((category) => (
+              <button
+                key={category}
+                onClick={() => setSelectedCategory(category)}
+                className={`h-8 px-3 rounded-[999px] text-xs font-medium transition-all duration-300 ${
+                  selectedCategory === category
+                    ? 'bg-black text-white border-black'
+                    : 'border border-[#000000] text-[#000000] hover:bg-gray-100'
+                }`}
+              >
+                {category}
+              </button>
+            ))}
 
-          <button
-            onClick={handleSearch}
-            className="absolute right-2 p-2.5 rounded-full flex items-center justify-center gap-2"
-          >
-            <MagnifyingGlassIcon className="w-5 h-5 text-[#000000] font-bold" />
-          </button>
+            {/* Clear Button (when focused) */}
+            {isInputFocused && inputValue && (
+              <button
+                onMouseDown={handleClearFocus}
+                className="p-2 rounded-full flex items-center justify-center z-10"
+                aria-label="Limpar pesquisa"
+              >
+                <XMarkIcon className="w-5 h-5 text-[#000000]" />
+              </button>
+            )}
+
+            {/* Magnifying Glass Button */}
+            <button
+              onClick={handleSearch}
+              className="p-2 rounded-full flex items-center justify-center"
+              aria-label="Pesquisar"
+            >
+              <MagnifyingGlassIcon className="w-5 h-5 text-[#000000] font-bold" />
+            </button>
+          </div>
         </div>
       </div>
-
       {/* Botão de Cadastro */}
       <div className="ml-4">
         <button

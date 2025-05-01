@@ -2,8 +2,6 @@
 
 import React from 'react';
 import PropertyCarousel from '../PropertyCarousel';
-import ExperienceCarousel from '../ExperienceCarousel';
-import RestaurantCarousel from '../RestaurantCarousel';
 
 export default function HomePage() {
 
