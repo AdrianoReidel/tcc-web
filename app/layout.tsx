@@ -8,6 +8,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import ClientLayout from '@/components/ClientLayout';
 import Footer from '@/components/Footer';
 import { Metadata } from 'next';
+import { PropertyProvider } from '@/context/PropertyContext';
 
 export const metadata: Metadata = {
   title: 'TCC Adriano',
@@ -50,12 +51,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="antialiased">
         <ClientLayout>
           <AuthProvider>
-            <header className="fixed top-0 left-0 right-0 z-80">
-              <Header />
-            </header>
-            <main className="flex-grow pt-[header-height]">{children}</main>
-            <ToastContainer />
-            <Footer />
+            <PropertyProvider>
+              <header className="fixed top-0 left-0 right-0 z-80">
+                <Header />
+              </header>
+              <main className="flex-grow pt-[header-height]">{children}</main>
+              <ToastContainer />
+              <Footer />
+            </PropertyProvider>
           </AuthProvider>
         </ClientLayout>
       </body>

@@ -1,5 +1,6 @@
 'use client';
 
+import { usePropertyContext } from '@/context/PropertyContext';
 import React, { useState } from 'react';
 
 export default function CadastrarPage() {
@@ -14,8 +15,12 @@ export default function CadastrarPage() {
     country: 'Brasil',
     zipCode: '',
     pricePerUnit: '',
-    operatingMode: 'Por Hora',
+    operatingMode: 'Por Noite',
   });
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
+  const { register } = usePropertyContext();
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -23,16 +28,32 @@ export default function CadastrarPage() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Dados enviados:', formData);
-    // Aqui você pode enviar via fetch/axios para sua API
+    setError(null);
+    setSuccess(null);
+
+    // Validar pricePerUnit antes de enviar
+    if (!formData.pricePerUnit || isNaN(parseFloat(formData.pricePerUnit))) {
+      setError('O preço por unidade deve ser um número válido.');
+      return;
+    }
+
+    try {
+      await register(formData);
+      setSuccess('Propriedade cadastrada com sucesso!');
+    } catch (error: any) {
+      setError(error.message || 'Erro ao cadastrar a propriedade. Tente novamente.');
+    }
   };
 
   return (
-    // <div className="w-full flex flex-col min-h-screen bg-[#1C2534] text-white pt-10">
     <div className="w-full flex flex-col min-h-screen bg-white text-black pt-20 px-8 md:px-20">
-      <h1 className="text-3xl font-bold mb-6">Cadastrar nova Propriedade/Espaço</h1>
+      <h1 className="text-3xl font-bold text-center mb-6">Cadastrar nova Propriedade/Espaço</h1>
+      {/* Exibir mensagem de sucesso ou erro */}
+      {error && <p className="text-red-500 mb-4">{error}</p>}
+      {success && <p className="text-green-500 mb-4">{success}</p>}
+
       <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <input
           type="text"
@@ -122,9 +143,9 @@ export default function CadastrarPage() {
           onChange={handleChange}
           className="p-3 rounded-md bg-white border border-gray-500 text-gray"
         >
+          <option value="Por Noite">Por Noite</option>
           <option value="Por Hora">Por Hora</option>
-          <option value="Dia">Por Dia</option>
-          <option value="Noite">Por Noite</option>
+          <option value="Por Dia">Por Dia</option>
         </select>
 
         <select

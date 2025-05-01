@@ -5,11 +5,7 @@ const PropertyCard = ({
   image,
   name,
   location,
-  rating,
-  reviews,
-  originalPrice,
-  discountedPrice,
-  discount,
+  price,
   hasBreakfast,
 }) => {
   return (
@@ -35,16 +31,9 @@ const PropertyCard = ({
         )}
         <div className="mt-2 flex items-center justify-between">
           <div className="space-x-2">
-            <span className="justify-center text-gray-500 text-base font-normal line-through leading-normal">
-              R${originalPrice}
-            </span>
             <span className="justify-center text-gray-900 text-base font-normal leading-normal">
-              R${discountedPrice}
+              R${price}
             </span>
-
-            <div className="px-1.5 py-0.5 bg-[#30a42a26] rounded inline-flex justify-center items-center gap-2.5">
-              <div className="justify-center text-[#30A42A] text-xs font-bold  leading-none">{discount}%</div>
-            </div>
           </div>
         </div>
       </div>

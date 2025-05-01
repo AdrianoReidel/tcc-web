@@ -61,12 +61,7 @@ const PropertyCarousel = ({ properties, text }) => {
                 image={property.image}
                 name={property.name}
                 location={property.location}
-                rating={property.rating}
-                reviews={property.reviews}
-                originalPrice={property.originalPrice}
-                discountedPrice={property.discountedPrice}
-                discount={property.discount}
-                hasBreakfast={property.hasBreakfast}
+                price={property.price}
               />
             </div>
           ))}
