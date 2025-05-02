@@ -16,6 +16,7 @@ export default function CadastrarPage() {
     zipCode: '',
     pricePerUnit: '',
     operatingMode: 'Por Noite',
+    image: null as File | null,
   });
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -25,7 +26,16 @@ export default function CadastrarPage() {
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value, files } = e.target as HTMLInputElement;
+    if (name === 'image' && files && files[0]) {
+      if (!files[0].type.startsWith('image/')) {
+        setError('Por favor, selecione um arquivo de imagem válido (ex: PNG, JPG).');
+        return;
+      }
+      setFormData({ ...formData, image: files[0] });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -33,9 +43,15 @@ export default function CadastrarPage() {
     setError(null);
     setSuccess(null);
 
-    // Validar pricePerUnit antes de enviar
+    // Validar pricePerUnit
     if (!formData.pricePerUnit || isNaN(parseFloat(formData.pricePerUnit))) {
       setError('O preço por unidade deve ser um número válido.');
+      return;
+    }
+
+    // Validar imagem
+    if (!formData.image) {
+      setError('Por favor, selecione uma imagem para a propriedade.');
       return;
     }
 
@@ -148,15 +164,14 @@ export default function CadastrarPage() {
           <option value="Por Dia">Por Dia</option>
         </select>
 
-        <select
-          name="status"
-          value={formData.status}
+        <input
+          type="file"
+          name="image"
+          accept="image/*"
           onChange={handleChange}
-          className="p-3 rounded-md bg-white border border-gray-500 text-gray"
-        >
-          <option value="AVAILABLE">Disponível</option>
-          <option value="UNAVAILABLE">Indisponível</option>
-        </select>
+          className="p-3 rounded-md bg-[#2B3A4B] border border-gray-500 text-gray"
+          required
+        />
 
         <textarea
           name="description"

@@ -16,7 +16,8 @@ interface PropertyData {
   country: string;
   zipCode: string;
   pricePerUnit: string;
-  operatingMode?: string;
+  operatingMode: string;
+  image?: File | null;
 }
 
 // Definir o tipo para a lista de propriedades retornada pela API (baseado na PropertyListDto)
@@ -31,6 +32,7 @@ interface PropertyListItem {
   type: string;
   city: string;
   state: string;
+  photoId?: string;
 }
 
 // Definir o tipo do contexto
@@ -38,6 +40,7 @@ interface PropertyContextType {
   register: (dados: PropertyData) => Promise<void>;
   getAllProperties: (search?: string, location?: string, type?: string) => Promise<PropertyListItem[]>;
   searchProperties: (location: string, type: string) => Promise<PropertyListItem[]>;
+  getPhotoDataById: (photoId: string) => Promise<Blob>;
 }
 
 // Criar o contexto
@@ -75,21 +78,30 @@ export function PropertyProvider({ children }: { children: React.ReactNode }) {
         throw new Error('O preço por unidade deve ser um número válido.');
       }
 
-      const dataToSend = {
-        title: dados.title,
-        description: dados.description,
-        type: typeMap[dados.type] || dados.type,
-        status: dados.status,
-        street: dados.street,
-        city: dados.city,
-        state: dados.state,
-        country: dados.country,
-        zipCode: dados.zipCode,
-        pricePerUnit: pricePerUnit,
-        operatingMode: operatingModeMap[dados.operatingMode || ''] || dados.operatingMode,
-      };
+      // Criar FormData para enviar os dados, incluindo a imagem
+      const dataToSend = new FormData();
+      dataToSend.append('title', dados.title);
+      dataToSend.append('description', dados.description);
+      dataToSend.append('type', typeMap[dados.type] || dados.type);
+      dataToSend.append('status', dados.status || 'AVAILABLE');
+      dataToSend.append('street', dados.street);
+      dataToSend.append('city', dados.city);
+      dataToSend.append('state', dados.state);
+      dataToSend.append('country', dados.country);
+      dataToSend.append('zipCode', dados.zipCode);
+      dataToSend.append('pricePerUnit', pricePerUnit.toString());
+      dataToSend.append('operatingMode', operatingModeMap[dados.operatingMode] || dados.operatingMode);
+      if (dados.image) {
+        dataToSend.append('image', dados.image);
+      }
 
-      await api.post('/property', dataToSend, { skipAuthRefresh: true });
+      await api.post('/property', dataToSend, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        skipAuthRefresh: true,
+      });
+
       router.push('/');
     } catch (error: any) {
       console.error('Erro ao cadastrar propriedade:', error);
@@ -110,6 +122,24 @@ export function PropertyProvider({ children }: { children: React.ReactNode }) {
     }
   }, []); 
 
+  const getPhotoDataById = useCallback(async (photoId: string): Promise<Blob> => {
+    try {
+      const response = await api.get(`property/photos/${photoId}`, {
+        responseType: 'blob',
+        headers: {
+          'Accept': 'image/jpeg'
+        },
+        skipAuthRefresh: true,
+      });
+  
+      return response.data; 
+    } catch (error: any) {
+      console.error(`Erro ao buscar imagem para photoId ${photoId}:`, error);
+      throw new Error(error.response?.data?.message || 'Erro ao buscar imagem.');
+    }
+  }, []);
+  
+
   const searchProperties = useCallback(async (location: string, type: string): Promise<PropertyListItem[]> => {
     try {
       const response = await api.get('/property/search', {
@@ -124,7 +154,7 @@ export function PropertyProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <PropertyContext.Provider value={{ register, getAllProperties, searchProperties }}>
+    <PropertyContext.Provider value={{ register, getAllProperties, searchProperties, getPhotoDataById }}>
       {children}
     </PropertyContext.Provider>
   );

@@ -10,36 +10,58 @@ export default function HomePage() {
   const [sports, setSports] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  const { getAllProperties } = usePropertyContext();
+  const { getAllProperties, getPhotoDataById } = usePropertyContext();
 
   useEffect(() => {
     const fetchProperties = async () => {
       try {
         const properties = await getAllProperties(); // Buscar todas as propriedades
-
+  
         // Mapear os dados para o formato esperado pelo PropertyCarousel
-        const mappedProperties = properties.map((property: any) => ({
-          id: property.id,
-          name: property.title,
-          location: `${property.city}, ${property.state}`, // Usar city e state do backend
-          price: property.pricePerUnit,
-          image: property.type === 'HOUSING' ? '/images/casa1.png' : 
-                 property.type === 'EVENTS' ? '/images/evento1.jpeg' : 
-                 '/images/quadra1.jpeg', // Imagem fixa com base no type
-          type: property.type, // Manter o type para filtragem
-        }));
-
+        const mappedProperties = await Promise.all(
+          properties.map(async (property: any) => {
+            let imageUrl = '/images/default.png'; // Imagem padrão como fallback
+  
+            if (property.photoId) {
+              try {
+                const photoBlob = await getPhotoDataById(property.photoId); // Buscar BLOB
+                imageUrl = URL.createObjectURL(photoBlob); // Criar URL de objeto
+              } catch (error) {
+                console.error(`Erro ao carregar imagem para photoId ${property.photoId}:`, error);
+              }
+            }
+  
+            return {
+              id: property.id,
+              name: property.title,
+              location: `${property.city}, ${property.state}`,
+              price: property.pricePerUnit,
+              image: imageUrl, // URL da imagem ou padrão
+              type: property.type,
+            };
+          })
+        );
+  
         // Filtrar por tipo
         setHousing(mappedProperties.filter((p: any) => p.type === 'HOUSING'));
         setEvents(mappedProperties.filter((p: any) => p.type === 'EVENTS'));
         setSports(mappedProperties.filter((p: any) => p.type === 'SPORTS'));
+  
+        // Limpar URLs de objeto quando o componente for desmontado
+        return () => {
+          mappedProperties.forEach((p) => {
+            if (p.image.startsWith('blob:')) {
+              URL.revokeObjectURL(p.image); // Liberar memória
+            }
+          });
+        };
       } catch (err: any) {
         setError(err.message || 'Erro ao carregar as propriedades.');
       }
     };
-
+  
     fetchProperties();
-  }, [getAllProperties]);
+  }, [getAllProperties, getPhotoDataById]); // Adicione getPhotoDataById às dependências
 
   return (
     <div className="w-full flex flex-col min-h-screen bg-[#1C2534] text-white pt-10">
