@@ -43,6 +43,7 @@ interface PropertyContextType {
   getPhotoDataById: (photoId: string) => Promise<Blob>;
   getMyProperties: () => Promise<PropertyListItem[]>;
   deleteProperty: (id: string) => Promise<void>;
+  addPhoto: (propertyId: string, file: File) => Promise<void>;
 }
 
 // Criar o contexto
@@ -179,8 +180,26 @@ export function PropertyProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const addPhoto = useCallback(async (propertyId: string, file: File): Promise<void> => {
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+
+      await api.post(`/property/${propertyId}/photos`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        skipAuthRefresh: true,
+      });
+    } catch (error: any) {
+      console.error('Erro ao adicionar foto:', error);
+      throw new Error(error.response?.data?.message || 'Erro ao adicionar foto.');
+    }
+  }, []);
+
   return (
-    <PropertyContext.Provider value={{ register, getAllProperties, searchProperties, getPhotoDataById, getMyProperties, deleteProperty }}>
+    <PropertyContext.Provider value={{ register, getAllProperties, searchProperties, 
+    getPhotoDataById, getMyProperties, deleteProperty, addPhoto }}>
       {children}
     </PropertyContext.Provider>
   );
