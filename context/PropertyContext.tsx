@@ -35,6 +35,13 @@ interface PropertyListItem {
   photoId?: string;
 }
 
+// Definir o tipo para as fotos
+interface Photo {
+  id: string;
+  data: Blob;
+  propertyId: string;
+}
+
 // Definir o tipo do contexto
 interface PropertyContextType {
   register: (dados: PropertyData) => Promise<void>;
@@ -44,6 +51,8 @@ interface PropertyContextType {
   getMyProperties: () => Promise<PropertyListItem[]>;
   deleteProperty: (id: string) => Promise<void>;
   addPhoto: (propertyId: string, file: File) => Promise<void>;
+  removePhoto: (propertyId: string, photoId: string) => Promise<void>;
+  getPhotosByPropertyId: (propertyId: string) => Promise<Photo[]>;
 }
 
 // Criar o contexto
@@ -195,10 +204,37 @@ export function PropertyProvider({ children }: { children: React.ReactNode }) {
       throw new Error(error.response?.data?.message || 'Erro ao adicionar foto.');
     }
   }, []);
+  
+  const removePhoto = useCallback(async (propertyId: string, photoId: string): Promise<void> => {
+    try {
+      await api.delete(`/property/${propertyId}/photos/${photoId}`, {
+        skipAuthRefresh: true,
+      });
+    } catch (error: any) {
+      console.error('Erro ao remover foto:', error);
+      throw new Error(error.response?.data?.message || 'Erro ao remover foto.');
+    }
+  }, []);
+
+  const getPhotosByPropertyId = useCallback(async (propertyId: string): Promise<Photo[]> => {
+    try {
+      const response = await api.get(`/property/${propertyId}/photos`, {
+        skipAuthRefresh: true,
+      });
+      const photos = response.data.data.map((photo: any) => ({
+        id: photo.id,
+        data: new Blob([new Uint8Array(photo.data.data)], { type: photo.mimeType || 'image/jpeg' }),
+        propertyId: photo.propertyId,
+      }));
+      return photos;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Erro ao buscar fotos.');
+    }
+  }, []);
 
   return (
     <PropertyContext.Provider value={{ register, getAllProperties, searchProperties, 
-    getPhotoDataById, getMyProperties, deleteProperty, addPhoto }}>
+    getPhotoDataById, getMyProperties, deleteProperty, addPhoto, removePhoto, getPhotosByPropertyId }}>
       {children}
     </PropertyContext.Provider>
   );

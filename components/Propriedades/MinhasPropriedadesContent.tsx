@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { usePropertyContext } from '@/context/PropertyContext';
-import { CameraIcon } from '@heroicons/react/16/solid';
+import { CameraIcon, TrashIcon } from '@heroicons/react/16/solid';
 
 export interface PropertyListItem {
   id: string;
@@ -14,13 +14,15 @@ export interface PropertyListItem {
 }
 
 export default function MinhasPropriedadesPage() {
-  const { getMyProperties, deleteProperty, addPhoto } = usePropertyContext();
+  const { getMyProperties, deleteProperty, addPhoto, removePhoto, getPhotosByPropertyId } = usePropertyContext();
   const [properties, setProperties] = useState<PropertyListItem[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isManageModalOpen, setIsManageModalOpen] = useState(false);
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [photos, setPhotos] = useState<{ id: string; data: Blob; propertyId: string }[]>([]);
 
   // Mapeamento dos valores de type para exibição
   const typeMap: { [key: string]: string } = {
@@ -59,7 +61,19 @@ export default function MinhasPropriedadesPage() {
 
   const handleAddPhotoClick = (id: string) => {
     setSelectedPropertyId(id);
-    setIsModalOpen(true);
+    setIsAddModalOpen(true);
+  };
+
+  const handleManagePhotosClick = async (id: string) => {
+    setSelectedPropertyId(id);
+    try {
+      const photosData = await getPhotosByPropertyId(id);
+      setPhotos(photosData);
+      setIsManageModalOpen(true);
+    } catch (err: any) {
+      console.error('Erro ao carregar fotos:', err);
+      setError(err.message || 'Erro ao carregar fotos da propriedade.');
+    }
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -81,7 +95,7 @@ export default function MinhasPropriedadesPage() {
       }
       setSuccess('Fotos adicionadas com sucesso!');
       setError(null);
-      setIsModalOpen(false);
+      setIsAddModalOpen(false);
       setSelectedFiles([]);
       setTimeout(() => setSuccess(null), 3000);
     } catch (err: any) {
@@ -91,14 +105,36 @@ export default function MinhasPropriedadesPage() {
     }
   };
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
+  const handleCloseAddModal = () => {
+    setIsAddModalOpen(false);
     setSelectedFiles([]);
     setError(null);
   };
 
+  const handleCloseManageModal = () => {
+    setIsManageModalOpen(false);
+    setPhotos([]);
+    setError(null);
+    // Liberar URLs de objeto ao fechar a modal
+    photos.forEach((photo) => URL.revokeObjectURL(URL.createObjectURL(photo.data)));
+  };
+
   const removeFile = (index: number) => {
     setSelectedFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
+  };
+
+  const handleDeletePhoto = async (photoId: string) => {
+    try {
+      await removePhoto(selectedPropertyId!, photoId); // ! pois selectedPropertyId é garantido como não nulo ao abrir a modal
+      setPhotos(photos.filter((photo) => photo.id !== photoId));
+      setSuccess('Foto removida com sucesso!');
+      setError(null);
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err: any) {
+      console.error('Erro ao remover foto:', err);
+      setError(err.message || 'Erro ao remover foto.');
+      setSuccess(null);
+    }
   };
 
   return (
@@ -111,7 +147,7 @@ export default function MinhasPropriedadesPage() {
       <table className="w-full border-collapse border border-gray-300">
         <thead className="bg-gray-100">
           <tr>
-            <th className="border p-2 text-left">Nº</th>
+            <th className="border p-2 text-left"></th>
             <th className="border p-2 text-left">Título</th>
             <th className="border p-2 text-left">Endereço</th>
             <th className="border p-2 text-left">Tipo</th>
@@ -135,13 +171,13 @@ export default function MinhasPropriedadesPage() {
                       console.log(`Editar propriedade com ID: ${property.id}`);
                     }}
                   >
-                    Editar
+                    Editar propriedade
                   </button>
                   <button
                     className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition"
                     onClick={() => handleDelete(property.id)}
                   >
-                    Excluir
+                    Excluir propriedade
                   </button>
                   <button
                     className="px-1 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition"
@@ -149,27 +185,33 @@ export default function MinhasPropriedadesPage() {
                   >
                     <CameraIcon className="w-5 h-5 inline-block text-white" /> Adicionar Fotos
                   </button>
+                  <button
+                    className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 transition"
+                    onClick={() => handleManagePhotosClick(property.id)}
+                  >
+                    Gerenciar Fotos
+                  </button>
                 </td>
               </tr>
             ))
           ) : (
             <tr>
               <td colSpan={6} className="border p-2 text-center">
-                Nenhuma propriedade encontrada
-              </td>
+              Nenhuma propriedade encontrada
+            </td>
             </tr>
           )}
         </tbody>
       </table>
 
-      {isModalOpen && (
+      {isAddModalOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-          onClick={handleCloseModal}
+          className="fixed inset-0 bg-black/50 bg-opacity-30 flex items-center justify-center z-50"
+          onClick={handleCloseAddModal}
         >
           <div
             className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md"
-            onClick={(e) => e.stopPropagation()} // Impede que o clique no modal feche
+            onClick={(e) => e.stopPropagation()}
           >
             <h2 className="text-xl font-bold mb-4">Adicionar Foto</h2>
             <label htmlFor="image-upload" className="block p-3 rounded-md bg-white border border-gray-500 text-gray-500 cursor-pointer mb-4">
@@ -211,7 +253,7 @@ export default function MinhasPropriedadesPage() {
             <div className="flex justify-end space-x-4">
               <button
                 className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-                onClick={handleCloseModal}
+                onClick={handleCloseAddModal}
               >
                 Cancelar
               </button>
@@ -220,6 +262,52 @@ export default function MinhasPropriedadesPage() {
                 onClick={handleSavePhoto}
               >
                 Salvar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isManageModalOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 bg-opacity-30 flex items-center justify-center z-50"
+          onClick={handleCloseManageModal}
+        >
+          <div
+            className="bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl flex flex-col max-h-[80vh]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-xl font-bold mb-4">Gerenciar Fotos - {properties.find(p => p.id === selectedPropertyId)?.title}</h2>
+            {photos.length > 0 ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 overflow-y-auto max-h-[60vh]">
+                {photos.map((photo) => {
+                  const imageUrl = URL.createObjectURL(photo.data);
+                  return (
+                    <div key={photo.id} className="relative">
+                      <img
+                        src={imageUrl}
+                        alt={`Foto da propriedade ${selectedPropertyId}`}
+                        className="w-full h-40 object-cover rounded"
+                      />
+                      <button
+                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                        onClick={() => handleDeletePhoto(photo.id)}
+                      >
+                        <TrashIcon className="w-5 h-5" />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-center">Nenhuma foto encontrada para esta propriedade.</p>
+            )}
+            <div className="flex justify-end mt-4">
+              <button
+                className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+                onClick={handleCloseManageModal}
+              >
+                Fechar
               </button>
             </div>
           </div>
