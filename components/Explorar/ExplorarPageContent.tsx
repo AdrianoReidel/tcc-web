@@ -11,6 +11,7 @@ interface Property {
   price: number;
   image: string;
   type: string;
+  photoId?: string;
 }
 
 interface ExplorarPageContentProps {
@@ -27,7 +28,7 @@ export default function ExplorarPageContent({ tipoPesquisado, localPesquisado }:
   const [properties, setProperties] = useState<Property[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  const { searchProperties } = usePropertyContext();
+  const { searchProperties, getPhotoDataById } = usePropertyContext();
 
   // Fecha o dropdown se clicar fora
   useEffect(() => {
@@ -57,30 +58,52 @@ export default function ExplorarPageContent({ tipoPesquisado, localPesquisado }:
           esportes: 'SPORTS',
         };
         const type = typeMap[tipoPesquisado.toLowerCase()];
-
-        const propertiesData = await searchProperties(local, type);
-
+  
+        const propertiesData = await searchProperties(localPesquisado, type);
+  
         // Mapear os dados para o formato esperado pelo PropertyCarousel
-        const mappedProperties: Property[] = propertiesData.map((property: any) => ({
-          id: property.id,
-          name: property.title,
-          location: `${property.city}, ${property.state}`,
-          price: parseFloat(property.pricePerUnit),
-          image: property.type === 'HOUSING' ? '/images/casa1.png' : 
-                 property.type === 'EVENTS' ? '/images/evento1.jpeg' : 
-                 '/images/quadra1.jpeg',
-          type: property.type,
-        }));
-
+        const mappedProperties = await Promise.all(
+          propertiesData.map(async (property: any) => {
+            let imageUrl = '/images/default.png'; // Imagem padrão como fallback
+  
+            if (property.photoId) {
+              try {
+                const photoBlob = await getPhotoDataById(property.photoId); // Buscar BLOB
+                imageUrl = URL.createObjectURL(photoBlob); // Criar URL de objeto
+              } catch (error) {
+                console.error(`Erro ao carregar imagem para photoId ${property.photoId}:`, error);
+              }
+            }
+  
+            return {
+              id: property.id,
+              name: property.title,
+              location: `${property.city}, ${property.state}`,
+              price: parseFloat(property.pricePerUnit),
+              image: imageUrl, // URL da imagem ou padrão
+              type: property.type,
+            };
+          })
+        );
+  
         setProperties(mappedProperties);
+  
+        // Limpar URLs de objeto quando o componente for desmontado
+        return () => {
+          mappedProperties.forEach((p) => {
+            if (p.image.startsWith('blob:')) {
+              URL.revokeObjectURL(p.image); // Liberar memória
+            }
+          });
+        };
       } catch (err: any) {
         console.error('Erro ao buscar propriedades:', err);
         setError(err.message || 'Erro ao carregar as propriedades.');
       }
     };
-
+  
     fetchProperties();
-  }, [localPesquisado, tipoPesquisado, searchProperties]);
+  }, [localPesquisado, tipoPesquisado, searchProperties, getPhotoDataById]);
 
   const capitalizeFirstLetter = (str: string) => {
     return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();

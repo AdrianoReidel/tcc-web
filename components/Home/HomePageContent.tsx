@@ -61,7 +61,7 @@ export default function HomePage() {
     };
   
     fetchProperties();
-  }, [getAllProperties, getPhotoDataById]); // Adicione getPhotoDataById às dependências
+  }, [getAllProperties, getPhotoDataById]);
 
   return (
     <div className="w-full flex flex-col min-h-screen bg-[#1C2534] text-white pt-10">

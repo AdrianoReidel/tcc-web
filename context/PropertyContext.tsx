@@ -115,7 +115,7 @@ export function PropertyProvider({ children }: { children: React.ReactNode }) {
   const getAllProperties = useCallback(async (search?: string, location?: string, type?: string): Promise<PropertyListItem[]> => {
     try {
       const response = await api.get('/property', {
-        params: { search, location, type },
+        params: { search },
         skipAuthRefresh: true,
       });
       return response.data.data;
@@ -124,6 +124,19 @@ export function PropertyProvider({ children }: { children: React.ReactNode }) {
       throw new Error(error.response?.data?.message || 'Erro ao buscar propriedades.');
     }
   }, []); 
+
+  const searchProperties = useCallback(async (location: string, type: string): Promise<PropertyListItem[]> => {
+    try {
+      const response = await api.get('/property/search', {
+        params: { location, type },
+        skipAuthRefresh: true,
+      });
+      return response.data;
+    } catch (error: any) {
+      console.error('Erro ao buscar propriedades filtradas:', error);
+      throw new Error(error.response?.data?.message || 'Erro ao buscar propriedades filtradas.');
+    }
+  }, []);
 
   const getPhotoDataById = useCallback(async (photoId: string): Promise<Blob> => {
     try {
@@ -139,20 +152,6 @@ export function PropertyProvider({ children }: { children: React.ReactNode }) {
     } catch (error: any) {
       console.error(`Erro ao buscar imagem para photoId ${photoId}:`, error);
       throw new Error(error.response?.data?.message || 'Erro ao buscar imagem.');
-    }
-  }, []);
-  
-
-  const searchProperties = useCallback(async (location: string, type: string): Promise<PropertyListItem[]> => {
-    try {
-      const response = await api.get('/property/search', {
-        params: { location, type },
-        skipAuthRefresh: true,
-      });
-      return response.data;
-    } catch (error: any) {
-      console.error('Erro ao buscar propriedades filtradas:', error);
-      throw new Error(error.response?.data?.message || 'Erro ao buscar propriedades filtradas.');
     }
   }, []);
 
