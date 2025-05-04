@@ -2,6 +2,7 @@
 
 import { usePropertyContext } from '@/context/PropertyContext';
 import React, { useState } from 'react';
+import { CameraIcon  } from '@heroicons/react/24/outline';
 
 export default function CadastrarPage() {
   const [formData, setFormData] = useState({
@@ -65,7 +66,7 @@ export default function CadastrarPage() {
 
   return (
     <div className="w-full flex flex-col min-h-screen bg-white text-black pt-20 px-8 md:px-20">
-      <h1 className="text-3xl font-bold text-center mb-6">Cadastrar nova Propriedade/Espaço</h1>
+      <h1 className="text-3xl font-bold text-left mb-6">Cadastrar nova Propriedade/Espaço</h1>
       {/* Exibir mensagem de sucesso ou erro */}
       {error && <p className="text-red-500 mb-4">{error}</p>}
       {success && <p className="text-green-500 mb-4">{success}</p>}
@@ -164,14 +165,19 @@ export default function CadastrarPage() {
           <option value="Por Dia">Por Dia</option>
         </select>
 
-        <input
-          type="file"
-          name="image"
-          accept="image/*"
-          onChange={handleChange}
-          className="p-3 rounded-md bg-[#2B3A4B] border border-gray-500 text-gray"
-          required
-        />
+        <label htmlFor="image" className="p-3 rounded-md bg-white border border-gray-500 text-gray-500 cursor-pointer">
+          <CameraIcon className="w-5 h-5 inline-block text-black" /> Escolha uma imagem para identificar sua propriedade 
+          <input
+            type="file"
+            id="image"
+            name="image"
+            accept="image/*"
+            onChange={handleChange}
+            className="hidden"
+            required
+          />
+        </label>
+
 
         <textarea
           name="description"

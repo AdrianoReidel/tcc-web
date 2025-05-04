@@ -41,6 +41,8 @@ interface PropertyContextType {
   getAllProperties: (search?: string, location?: string, type?: string) => Promise<PropertyListItem[]>;
   searchProperties: (location: string, type: string) => Promise<PropertyListItem[]>;
   getPhotoDataById: (photoId: string) => Promise<Blob>;
+  getMyProperties: () => Promise<PropertyListItem[]>;
+  deleteProperty: (id: string) => Promise<void>;
 }
 
 // Criar o contexto
@@ -153,8 +155,32 @@ export function PropertyProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const getMyProperties = useCallback(async (): Promise<PropertyListItem[]> => {
+    try {
+      const response = await api.get('/property/me', {
+        skipAuthRefresh: true,
+      });
+      const properties = Array.isArray(response.data) ? response.data : response.data.data || [];
+      return properties;
+    } catch (error: any) {
+      console.error('Erro ao buscar propriedades do usuário:', error);
+      throw new Error(error.response?.data?.message || 'Erro ao buscar propriedades do usuário.');
+    }
+  }, []);
+
+  const deleteProperty = useCallback(async (id: string): Promise<void> => {
+    try {
+      await api.delete(`/property/${id}`, {
+        skipAuthRefresh: true,
+      });
+    } catch (error: any) {
+      console.error('Erro ao excluir propriedade:', error);
+      throw new Error(error.response?.data?.message || 'Erro ao excluir propriedade.');
+    }
+  }, []);
+
   return (
-    <PropertyContext.Provider value={{ register, getAllProperties, searchProperties, getPhotoDataById }}>
+    <PropertyContext.Provider value={{ register, getAllProperties, searchProperties, getPhotoDataById, getMyProperties, deleteProperty }}>
       {children}
     </PropertyContext.Provider>
   );

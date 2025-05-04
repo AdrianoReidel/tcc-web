@@ -2,12 +2,14 @@
 import { useState } from 'react';
 import { toast } from 'react-toastify';
 import { useAuth } from '@/context/AuthContext';
+import { useRouter } from 'next/navigation'; 
 
 interface AuthModalProps {
   onClose?: () => void;
 }
 
 export default function UserAuthOptionsDropdown({ onClose }: AuthModalProps) {
+  const router = useRouter();
   const { logout } = useAuth();
   const [error, setError] = useState<string | null>(null);
 
@@ -23,6 +25,11 @@ export default function UserAuthOptionsDropdown({ onClose }: AuthModalProps) {
 
   const handleClick = () => {
     toast.info('Esta função está em desenvolvimento!');
+  };
+
+  const handlePropertiesClick = () => {
+    router.push(`/minhas-propriedades`);
+    if (onClose) onClose();
   };
 
   return (
@@ -41,7 +48,7 @@ export default function UserAuthOptionsDropdown({ onClose }: AuthModalProps) {
 
           <button
             className="w-full text-left px-3 py-2 text-[#667085] text-sm font-normal leading-[21px] hover:bg-gray-100 rounded-md transition-colors"
-            onClick={handleClick}
+            onClick={handlePropertiesClick}
           >
             Minhas propriedades
           </button>
