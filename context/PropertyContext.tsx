@@ -42,6 +42,15 @@ interface Photo {
   propertyId: string;
 }
 
+interface PropertyUpdateData {
+  title: string;
+  pricePerUnit: number;
+  type: string;
+  description: string;
+  operatingMode: string;
+  image?: File | null;
+}
+
 // Definir o tipo do contexto
 interface PropertyContextType {
   register: (dados: PropertyData) => Promise<void>;
@@ -53,6 +62,7 @@ interface PropertyContextType {
   addPhoto: (propertyId: string, file: File) => Promise<void>;
   removePhoto: (propertyId: string, photoId: string) => Promise<void>;
   getPhotosByPropertyId: (propertyId: string) => Promise<Photo[]>;
+  updateProperty: (id: string, data: FormData) => Promise<void>;
 }
 
 // Criar o contexto
@@ -232,9 +242,23 @@ export function PropertyProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const updateProperty = useCallback(async (id: string, data: FormData): Promise<void> => {
+    try {
+      await api.put(`/property/${id}`, data, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        skipAuthRefresh: true,
+      });
+    } catch (error: any) {
+      console.error('Erro ao atualizar propriedade:', error);
+      throw new Error(error.response?.data?.message || 'Erro ao atualizar propriedade.');
+    }
+  }, []);
+
   return (
     <PropertyContext.Provider value={{ register, getAllProperties, searchProperties, 
-    getPhotoDataById, getMyProperties, deleteProperty, addPhoto, removePhoto, getPhotosByPropertyId }}>
+    getPhotoDataById, getMyProperties, deleteProperty, addPhoto, removePhoto, getPhotosByPropertyId, updateProperty }}>
       {children}
     </PropertyContext.Provider>
   );
