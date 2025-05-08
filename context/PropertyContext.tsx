@@ -51,6 +51,24 @@ interface PropertyUpdateData {
   image?: File | null;
 }
 
+interface Property {
+  id: string;
+  title: string;
+  description: string;
+  type: string;
+  status: string;
+  street: string;
+  city: string;
+  state: string;
+  country: string;
+  zipCode: string;
+  pricePerUnit: number;
+  hostId: string;
+  createdAt: Date;
+  updatedAt: Date;
+  operatingMode?: string;
+}
+
 // Definir o tipo do contexto
 interface PropertyContextType {
   register: (dados: PropertyData) => Promise<void>;
@@ -63,6 +81,7 @@ interface PropertyContextType {
   removePhoto: (propertyId: string, photoId: string) => Promise<void>;
   getPhotosByPropertyId: (propertyId: string) => Promise<Photo[]>;
   updateProperty: (id: string, data: FormData) => Promise<void>;
+  findById: (id: string) => Promise<Property>;
 }
 
 // Criar o contexto
@@ -256,9 +275,15 @@ export function PropertyProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const findById = async (id: string) => {
+    const response = await api.get(`/property/${id}`);
+    return response.data;
+  };
+
   return (
     <PropertyContext.Provider value={{ register, getAllProperties, searchProperties, 
-    getPhotoDataById, getMyProperties, deleteProperty, addPhoto, removePhoto, getPhotosByPropertyId, updateProperty }}>
+    getPhotoDataById, getMyProperties, deleteProperty, addPhoto, removePhoto, getPhotosByPropertyId, 
+    updateProperty, findById }}>
       {children}
     </PropertyContext.Provider>
   );
