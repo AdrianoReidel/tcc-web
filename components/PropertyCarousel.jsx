@@ -4,7 +4,7 @@ import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 
 const PropertyCarousel = ({ properties, text }) => {
   const carouselRef = useRef(null);
-
+  debugger
   const scrollLeft = () => {
     if (carouselRef.current) {
       carouselRef.current.scrollBy({ left: -300, behavior: 'smooth' });

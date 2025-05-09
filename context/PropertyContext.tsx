@@ -277,7 +277,7 @@ export function PropertyProvider({ children }: { children: React.ReactNode }) {
 
   const findById = async (id: string) => {
     const response = await api.get(`/property/${id}`);
-    return response.data;
+    return response.data.data;
   };
 
   return (

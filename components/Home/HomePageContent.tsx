@@ -30,7 +30,7 @@ export default function HomePage() {
                 console.error(`Erro ao carregar imagem para photoId ${property.photoId}:`, error);
               }
             }
-  
+            debugger
             return {
               id: property.id,
               name: property.title,
@@ -41,7 +41,7 @@ export default function HomePage() {
             };
           })
         );
-  
+        debugger
         // Filtrar por tipo
         setHousing(mappedProperties.filter((p: any) => p.type === 'HOUSING'));
         setEvents(mappedProperties.filter((p: any) => p.type === 'EVENTS'));
