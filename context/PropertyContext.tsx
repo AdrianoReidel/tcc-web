@@ -80,6 +80,7 @@ interface PropertyContextType {
   addPhoto: (propertyId: string, file: File) => Promise<void>;
   removePhoto: (propertyId: string, photoId: string) => Promise<void>;
   getPhotosByPropertyId: (propertyId: string) => Promise<Photo[]>;
+  getPhotosByPropertyIdSinglePage: (propertyId: string) => Promise<Photo[]>;
   updateProperty: (id: string, data: FormData) => Promise<void>;
   findById: (id: string) => Promise<Property>;
 }
@@ -261,6 +262,22 @@ export function PropertyProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const getPhotosByPropertyIdSinglePage = useCallback(async (propertyId: string): Promise<Photo[]> => {
+    try {
+      const response = await api.get(`/property/${propertyId}/photosSinglePage`, {
+        skipAuthRefresh: true,
+      });
+      const photos = response.data.data.map((photo: any) => ({
+        id: photo.id,
+        data: new Blob([new Uint8Array(photo.data.data)], { type: photo.mimeType || 'image/jpeg' }),
+        propertyId: photo.propertyId,
+      }));
+      return photos;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Erro ao buscar fotos.');
+    }
+  }, []);
+
   const updateProperty = useCallback(async (id: string, data: FormData): Promise<void> => {
     try {
       await api.put(`/property/${id}`, data, {
@@ -283,7 +300,7 @@ export function PropertyProvider({ children }: { children: React.ReactNode }) {
   return (
     <PropertyContext.Provider value={{ register, getAllProperties, searchProperties, 
     getPhotoDataById, getMyProperties, deleteProperty, addPhoto, removePhoto, getPhotosByPropertyId, 
-    updateProperty, findById }}>
+    getPhotosByPropertyIdSinglePage, updateProperty, findById }}>
       {children}
     </PropertyContext.Provider>
   );

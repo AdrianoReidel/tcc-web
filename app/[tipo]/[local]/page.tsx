@@ -6,7 +6,7 @@ type PageProps = {
   params: any;
 };
 
-export default function Page({ params }: PageProps) {
+export default async function Page({ params }: PageProps) {
   // Lista de tipos de rota válidos
   const validTypes = ['moradias', 'eventos', 'esportes'];
 
