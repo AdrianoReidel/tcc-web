@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { usePropertyContext } from '@/context/PropertyContext';
-import Calendar from './Calendar'; // Ajuste o caminho conforme necessário
+import Calendar from './Calendar';
 
 interface Property {
   id: string;
@@ -21,6 +21,7 @@ interface Property {
   updatedAt: Date;
   operatingMode?: string;
   photoIds?: string[];
+  reservations: { checkIn: Date; checkOut: Date; selectedTime: number }[];
 }
 
 interface PropriedadePageContentProps {
@@ -37,7 +38,6 @@ export default function MinhasPropriedadesPage({ id }: PropriedadePageContentPro
   const [selectedTime, setSelectedTime] = useState<string>('');
   const [totalPrice, setTotalPrice] = useState<number>(0);
 
-  // Mapas de conversão para exibição amigável
   const typeMap: { [key: string]: string } = {
     HOUSING: 'Moradia',
     SPORTS: 'Espaço Esportivo',
@@ -49,6 +49,15 @@ export default function MinhasPropriedadesPage({ id }: PropriedadePageContentPro
     PER_HOUR: 'Por Hora',
     PER_DAY: 'Por Dia',
   };
+
+  const timeOptions: string[] = [];
+  for (let hour = 8; hour <= 22; hour++) {
+    const formattedHour = hour.toString().padStart(2, '0') + ':00';
+    timeOptions.push(formattedHour);
+  }
+
+  const today = new Date();
+  const minDate = today.toISOString().split('T')[0];
 
   useEffect(() => {
     const fetchProperty = async () => {
@@ -65,23 +74,19 @@ export default function MinhasPropriedadesPage({ id }: PropriedadePageContentPro
     fetchProperty();
   }, [id, findById, getPhotosByPropertyIdSinglePage]);
 
-  // Calcular preço com base nas regras específicas
   useEffect(() => {
     if (property && startDate && endDate && property.type !== 'SPORTS') {
       const start = new Date(startDate);
       const end = new Date(endDate);
       const diffTime = Math.abs(end.getTime() - start.getTime());
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // Inclui o dia final
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
 
       if (property.type === 'HOUSING') {
-        // Para hospedagens, conta 1 unidade por noite
         setTotalPrice(diffDays > 1 ? property.pricePerUnit * (diffDays - 1) : 0);
       } else if (property.type === 'EVENTS') {
-        // Para eventos, conta o número total de dias (incluso início e fim)
         setTotalPrice(diffDays * property.pricePerUnit);
       }
     } else if (property && startDate && selectedTime && property.type === 'SPORTS') {
-      // Para esportes, preço é fixo por horário selecionado
       setTotalPrice(property.pricePerUnit);
     } else {
       setTotalPrice(0);
@@ -112,15 +117,34 @@ export default function MinhasPropriedadesPage({ id }: PropriedadePageContentPro
     }
   };
 
+  // Obter os dias reservados para HOUSING e EVENTS
+  const reservedDates: { start: Date; end: Date }[] = property.reservations
+    .filter(res => res.checkIn && res.checkOut)
+    .map(res => {
+      const start = new Date(res.checkIn);
+      const end = new Date(res.checkOut);
+      // Adicionar 1 dia ao checkOut para incluir o dia final
+      end.setDate(end.getDate() + 1);
+      return { start, end };
+    });
+
+  // Obter os horários reservados para SPORTS na data selecionada
+  const reservedTimesForSelectedDate = startDate && property.type === 'SPORTS'
+    ? property.reservations
+        .filter(res => {
+          const reservationDate = new Date(res.checkIn).toISOString().split('T')[0];
+          return reservationDate === startDate;
+        })
+        .map(res => res.selectedTime)
+    : [];
+
   return (
     <div className="w-full flex flex-col min-h-screen bg-white text-black pt-20 pb-10 px-8 md:px-20">
-      {/* Título e Descrição */}
       <div className="space-y-4 mb-6">
         <p className="text-3xl font-bold"><strong>{property.title}</strong></p>
         <p>{property.description}</p>
       </div>
 
-      {/* Fotos em linha com rolagem horizontal */}
       {photos.length > 0 ? (
         <div className="flex flex-row overflow-x-auto space-x-4 mb-6 scrollbar">
           {photos.map((photo) => {
@@ -140,9 +164,7 @@ export default function MinhasPropriedadesPage({ id }: PropriedadePageContentPro
         <p className="text-center mb-6">Nenhuma foto encontrada para esta propriedade.</p>
       )}
 
-      {/* Layout com Tipo/Disponibilidade à esquerda e Endereço à direita */}
       <div className="flex justify-between items-start">
-        {/* Coluna Esquerda: Tipo e Disponibilidade */}
         <div className="space-y-2">
           <p>
             {typeMap[property.type] || property.type}{' '}
@@ -150,71 +172,82 @@ export default function MinhasPropriedadesPage({ id }: PropriedadePageContentPro
           </p>
         </div>
 
-        {/* Coluna Direita: Endereço */}
         <div className="space-y-2 text-right">
           <p>{`${property.street}, ${property.city}, ${property.state}, ${property.country}, ${property.zipCode}`}</p>
         </div>
       </div>
 
-      {/* Preço */}
       <div className="mt-6">
         <p>
           Preço {property.operatingMode ? operatingModeMap[property.operatingMode] || property.operatingMode : ''} R$ {property.pricePerUnit}
         </p>
       </div>
 
-      {/* Seção de Reserva Fixa */}
       <div className="w-full bg-gray-100 p-4 shadow-md">
         <div className="flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-4">
           {property.type !== 'SPORTS' ? (
             <div className="flex flex-row space-x-4">
-              {/* Calendário e Campo de Data Inicial */}
               <div className="flex flex-col items-center">
                 <label className="text-sm font-medium mb-1">Data de Início</label>
-                <Calendar selectedDate={startDate} onDateSelect={setStartDate} />
+                <Calendar
+                  selectedDate={startDate}
+                  onDateSelect={setStartDate}
+                  minDate={minDate}
+                  reservedDates={reservedDates}
+                />
               </div>
 
-              {/* Calendário e Campo de Data Final */}
               <div className="flex flex-col items-center">
                 <label className="text-sm font-medium mb-1">Data de Fim</label>
-                <Calendar selectedDate={endDate} onDateSelect={setEndDate} />
+                <Calendar
+                  selectedDate={endDate}
+                  onDateSelect={setEndDate}
+                  minDate={minDate}
+                  reservedDates={reservedDates}
+                />
               </div>
             </div>
           ) : (
             <>
-              {/* Calendário para Esportes */}
               <div className="flex flex-col">
                 <label className="text-sm font-medium mb-1">Data</label>
-                <Calendar selectedDate={startDate} onDateSelect={setStartDate} />
+                <Calendar
+                  selectedDate={startDate}
+                  onDateSelect={setStartDate}
+                  minDate={minDate}
+                  reservedDates={reservedDates}
+                />
               </div>
 
-              {/* Campo de Data para Esportes */}
               <div className="flex flex-col">
                 <label className="text-sm font-medium mb-1">Data Selecionada</label>
                 <p className="p-2 rounded-md bg-gray-200">{startDate || 'Nenhuma data'}</p>
               </div>
 
-              {/* Input de Horário */}
               <div className="flex flex-col">
                 <label className="text-sm font-medium mb-1">Horário</label>
-                <input
-                  type="time"
+                <select
                   value={selectedTime}
                   onChange={(e) => setSelectedTime(e.target.value)}
                   className={`p-2 rounded-md border-2 ${selectedTime ? 'border-blue-500' : 'border-gray-300'} focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                />
-              </div>
-
-              {/* Campo de Horário */}
-              <div className="flex flex-col">
-                <label className="text-sm font-medium mb-1">Horário Selecionado</label>
-                <p className="p-2 rounded-md bg-gray-200">{selectedTime || 'Nenhum horário'}</p>
+                  disabled={!startDate}
+                >
+                  <option value="">Selecione um horário</option>
+                  {timeOptions.map((time) => {
+                    const hour = parseInt(time.split(':')[0]);
+                    const isReserved = reservedTimesForSelectedDate.includes(hour);
+                    return (
+                      <option key={time} value={time} disabled={isReserved}>
+                        {time} {isReserved ? '(Reservado)' : ''}
+                      </option>
+                    );
+                  })}
+                </select>
               </div>
             </>
           )}
         </div>
 
-        {/* Valor Total e Botão de Alugar */}
         <div className="flex flex-col items-center mt-4 space-y-2">
           <p className="text-lg font-medium">Total: R$ {totalPrice.toFixed(2)}</p>
           <button

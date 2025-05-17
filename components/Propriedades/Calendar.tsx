@@ -5,9 +5,11 @@ import React, { useState } from 'react';
 interface CalendarProps {
   selectedDate: string;
   onDateSelect: (date: string) => void;
+  minDate?: string;
+  reservedDates?: { start: Date; end: Date }[];
 }
 
-const Calendar: React.FC<CalendarProps> = ({ selectedDate, onDateSelect }) => {
+const Calendar: React.FC<CalendarProps> = ({ selectedDate, onDateSelect, minDate, reservedDates = [] }) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
   const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
@@ -22,15 +24,34 @@ const Calendar: React.FC<CalendarProps> = ({ selectedDate, onDateSelect }) => {
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
   };
 
+  const isDateReserved = (date: Date) => {
+    return reservedDates.some((range) => {
+      const start = new Date(range.start);
+      const end = new Date(range.end);
+      return date >= start && date <= end;
+    });
+  };
+
   const handleDayClick = (day: number) => {
     const selected = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
-    const formattedDate = selected.toISOString().split('T')[0]; // Formato YYYY-MM-DD
+    const formattedDate = selected.toISOString().split('T')[0];
+
+    if (minDate) {
+      const min = new Date(minDate);
+      if (selected < min) {
+        return;
+      }
+    }
+
+    if (isDateReserved(selected)) {
+      return;
+    }
+
     onDateSelect(formattedDate);
   };
 
   return (
     <div className="bg-white p-4 rounded-lg shadow-md w-64">
-      {/* Cabeçalho do Calendário */}
       <div className="flex justify-between items-center mb-4">
         <button onClick={prevMonth} className="text-blue-500 hover:text-blue-700">
           &lt;
@@ -43,7 +64,6 @@ const Calendar: React.FC<CalendarProps> = ({ selectedDate, onDateSelect }) => {
         </button>
       </div>
 
-      {/* Dias da Semana */}
       <div className="grid grid-cols-7 gap-1 text-center text-sm font-medium text-gray-500">
         <div>Dom</div>
         <div>Seg</div>
@@ -54,23 +74,27 @@ const Calendar: React.FC<CalendarProps> = ({ selectedDate, onDateSelect }) => {
         <div>Sáb</div>
       </div>
 
-      {/* Dias do Mês */}
       <div className="grid grid-cols-7 gap-1 text-center">
-        {/* Espaços vazios antes do primeiro dia */}
         {Array.from({ length: firstDayOfMonth }).map((_, index) => (
           <div key={`empty-${index}`} />
         ))}
         {daysArray.map((day) => {
-          const dateStr = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day)
-            .toISOString()
-            .split('T')[0];
+          const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
+          const dateStr = date.toISOString().split('T')[0];
           const isSelected = selectedDate === dateStr;
+          const isPastDate = minDate ? date < new Date(minDate) : false;
+          const isReserved = isDateReserved(date);
+
           return (
             <div
               key={day}
               onClick={() => handleDayClick(day)}
               className={`p-2 rounded-full cursor-pointer ${
-                isSelected ? 'bg-blue-500 text-white' : 'hover:bg-blue-100'
+                isSelected
+                  ? 'bg-blue-500 text-white'
+                  : isPastDate || isReserved
+                  ? 'text-gray-300 cursor-not-allowed'
+                  : 'hover:bg-blue-100'
               }`}
             >
               {day}

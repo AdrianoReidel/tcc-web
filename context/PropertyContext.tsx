@@ -51,6 +51,12 @@ interface PropertyUpdateData {
   image?: File | null;
 }
 
+interface Reservation {
+  checkIn: Date;
+  checkOut: Date;
+  selectedTime: number;
+}
+
 interface Property {
   id: string;
   title: string;
@@ -67,6 +73,8 @@ interface Property {
   createdAt: Date;
   updatedAt: Date;
   operatingMode?: string;
+  photoIds?: string[];
+  reservations: Reservation[];
 }
 
 interface ReservationData {
@@ -306,11 +314,17 @@ export function PropertyProvider({ children }: { children: React.ReactNode }) {
 
   const reserveProperty = useCallback(async (propertyId: string, reservation: ReservationData): Promise<void> => {
     try {
+      // Extrair apenas a hora como inteiro (ex.: "10:00" -> 10)
+      let selectedTimeInHours: number | undefined;
+      if (reservation.selectedTime) {
+        selectedTimeInHours = parseInt(reservation.selectedTime.split(':')[0]);
+      }
+
       const reservationData = {
         propertyId,
         startDate: reservation.startDate,
         endDate: reservation.endDate,
-        selectedTime: reservation.selectedTime,
+        selectedTime: selectedTimeInHours,
       };
 
       await api.post(`/property/${propertyId}/reserve`, reservationData, {
