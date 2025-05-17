@@ -69,6 +69,12 @@ interface Property {
   operatingMode?: string;
 }
 
+interface ReservationData {
+  startDate?: string | null;
+  endDate?: string | null;
+  selectedTime?: string | null;
+}
+
 // Definir o tipo do contexto
 interface PropertyContextType {
   register: (dados: PropertyData) => Promise<void>;
@@ -83,6 +89,7 @@ interface PropertyContextType {
   getPhotosByPropertyIdSinglePage: (propertyId: string) => Promise<Photo[]>;
   updateProperty: (id: string, data: FormData) => Promise<void>;
   findById: (id: string) => Promise<Property>;
+  reserveProperty: (propertyId: string, reservation: ReservationData) => Promise<void>;
 }
 
 // Criar o contexto
@@ -297,10 +304,30 @@ export function PropertyProvider({ children }: { children: React.ReactNode }) {
     return response.data.data;
   };
 
+  const reserveProperty = useCallback(async (propertyId: string, reservation: ReservationData): Promise<void> => {
+    try {
+      const reservationData = {
+        propertyId,
+        startDate: reservation.startDate,
+        endDate: reservation.endDate,
+        selectedTime: reservation.selectedTime,
+      };
+
+      await api.post(`/property/${propertyId}/reserve`, reservationData, {
+        skipAuthRefresh: true,
+      });
+
+      router.push('/minhas-reservas'); // Redireciona para uma página de reservas após sucesso
+    } catch (error: any) {
+      console.error('Erro ao reservar propriedade:', error);
+      throw new Error(error.response?.data?.message || 'Erro ao reservar a propriedade.');
+    }
+  }, [router]);
+
   return (
     <PropertyContext.Provider value={{ register, getAllProperties, searchProperties, 
     getPhotoDataById, getMyProperties, deleteProperty, addPhoto, removePhoto, getPhotosByPropertyId, 
-    getPhotosByPropertyIdSinglePage, updateProperty, findById }}>
+    getPhotosByPropertyIdSinglePage, updateProperty, findById, reserveProperty }}>
       {children}
     </PropertyContext.Provider>
   );

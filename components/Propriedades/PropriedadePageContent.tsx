@@ -28,7 +28,7 @@ interface PropriedadePageContentProps {
 }
 
 export default function MinhasPropriedadesPage({ id }: PropriedadePageContentProps) {
-  const { findById, getPhotosByPropertyIdSinglePage } = usePropertyContext();
+  const { findById, getPhotosByPropertyIdSinglePage, reserveProperty } = usePropertyContext();
   const [property, setProperty] = useState<Property | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [photos, setPhotos] = useState<{ id: string; data: Blob; propertyId: string }[]>([]);
@@ -63,7 +63,7 @@ export default function MinhasPropriedadesPage({ id }: PropriedadePageContentPro
       }
     };
     fetchProperty();
-  }, [id, findById]);
+  }, [id, findById, getPhotosByPropertyIdSinglePage]);
 
   // Calcular preço com base nas regras específicas
   useEffect(() => {
@@ -74,13 +74,14 @@ export default function MinhasPropriedadesPage({ id }: PropriedadePageContentPro
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // Inclui o dia final
 
       if (property.type === 'HOUSING') {
-        // Para hospedagens, conta 1 unidade se houver pelo menos uma noite
-        setTotalPrice(diffDays > 1 ? property.pricePerUnit * (diffDays-1) : 0);
+        // Para hospedagens, conta 1 unidade por noite
+        setTotalPrice(diffDays > 1 ? property.pricePerUnit * (diffDays - 1) : 0);
       } else if (property.type === 'EVENTS') {
         // Para eventos, conta o número total de dias (incluso início e fim)
         setTotalPrice(diffDays * property.pricePerUnit);
       }
     } else if (property && startDate && selectedTime && property.type === 'SPORTS') {
+      // Para esportes, preço é fixo por horário selecionado
       setTotalPrice(property.pricePerUnit);
     } else {
       setTotalPrice(0);
@@ -95,17 +96,21 @@ export default function MinhasPropriedadesPage({ id }: PropriedadePageContentPro
     return <div className="w-full flex flex-col min-h-screen bg-white text-black pt-20 pb-10 px-8 md:px-20"><p>Carregando...</p></div>;
   }
 
-  // const handleReserve = () => {
-  //   if (reserveProperty && property && (startDate || (startDate && selectedTime))) {
-  //     reserveProperty(id, {
-  //       startDate: startDate || null,
-  //       endDate: endDate || null,
-  //       selectedTime: selectedTime || null,
-  //     });
-  //   } else {
-  //     alert('Por favor, selecione uma data (e horário para esportes).');
-  //   }
-  // };
+  const handleReserve = async () => {
+    try {
+      if (property && (startDate || (startDate && selectedTime))) {
+        await reserveProperty(id, {
+          startDate: property.type === 'SPORTS' ? startDate : startDate || null,
+          endDate: property.type !== 'SPORTS' ? endDate || null : null,
+          selectedTime: property.type === 'SPORTS' ? selectedTime || null : null,
+        });
+      } else {
+        alert('Por favor, selecione uma data' + (property.type === 'SPORTS' ? ' e horário' : '') + '.');
+      }
+    } catch (err: any) {
+      alert(err.message || 'Erro ao realizar a reserva.');
+    }
+  };
 
   return (
     <div className="w-full flex flex-col min-h-screen bg-white text-black pt-20 pb-10 px-8 md:px-20">
@@ -159,7 +164,7 @@ export default function MinhasPropriedadesPage({ id }: PropriedadePageContentPro
       </div>
 
       {/* Seção de Reserva Fixa */}
-      <div className=" w-full bg-gray-100 p-4 shadow-md">
+      <div className="w-full bg-gray-100 p-4 shadow-md">
         <div className="flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-4">
           {property.type !== 'SPORTS' ? (
             <div className="flex flex-row space-x-4">
@@ -213,7 +218,7 @@ export default function MinhasPropriedadesPage({ id }: PropriedadePageContentPro
         <div className="flex flex-col items-center mt-4 space-y-2">
           <p className="text-lg font-medium">Total: R$ {totalPrice.toFixed(2)}</p>
           <button
-            // onClick={handleReserve}
+            onClick={handleReserve}
             className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
           >
             Alugar
