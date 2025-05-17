@@ -23,8 +23,9 @@ export default function UserAuthOptionsDropdown({ onClose }: AuthModalProps) {
     }
   };
 
-  const handleClick = () => {
-    toast.info('Esta função está em desenvolvimento!');
+  const handleMyReservationsClick = () => {
+    router.push(`/minhas-reservas`);
+    if (onClose) onClose();
   };
 
   const handlePropertiesClick = () => {
@@ -41,7 +42,7 @@ export default function UserAuthOptionsDropdown({ onClose }: AuthModalProps) {
         <div className="flex flex-col space-y-2">
           <button
             className="w-full text-left px-3 py-2 text-[#667085] text-sm font-normal leading-[21px] hover:bg-gray-100 rounded-md transition-colors"
-            onClick={handleClick}
+            onClick={handleMyReservationsClick}
           >
             Minhas reservas
           </button>

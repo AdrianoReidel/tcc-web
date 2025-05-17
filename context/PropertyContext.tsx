@@ -52,9 +52,15 @@ interface PropertyUpdateData {
 }
 
 interface Reservation {
+  id?: string;
+  propertyId?: string;
+  propertyTitle?: string;
+  propertyType?: string;
   checkIn: Date;
   checkOut: Date;
   selectedTime: number;
+  totalPrice?: number;
+  status?: string;
 }
 
 interface Property {
@@ -98,6 +104,7 @@ interface PropertyContextType {
   updateProperty: (id: string, data: FormData) => Promise<void>;
   findById: (id: string) => Promise<Property>;
   reserveProperty: (propertyId: string, reservation: ReservationData) => Promise<void>;
+  getMyReservations: () => Promise<Reservation[]>;
 }
 
 // Criar o contexto
@@ -338,10 +345,22 @@ export function PropertyProvider({ children }: { children: React.ReactNode }) {
     }
   }, [router]);
 
+  const getMyReservations = useCallback(async (): Promise<Reservation[]> => {
+    try {
+      const response = await api.get('/property/my-reservations', {
+        skipAuthRefresh: true,
+      });
+      return response.data.data;
+    } catch (error: any) {
+      console.error('Erro ao buscar reservas do usuário:', error);
+      throw new Error(error.response?.data?.message || 'Erro ao buscar reservas do usuário.');
+    }
+  }, []);
+
   return (
     <PropertyContext.Provider value={{ register, getAllProperties, searchProperties, 
     getPhotoDataById, getMyProperties, deleteProperty, addPhoto, removePhoto, getPhotosByPropertyId, 
-    getPhotosByPropertyIdSinglePage, updateProperty, findById, reserveProperty }}>
+    getPhotosByPropertyIdSinglePage, updateProperty, findById, reserveProperty, getMyReservations }}>
       {children}
     </PropertyContext.Provider>
   );
