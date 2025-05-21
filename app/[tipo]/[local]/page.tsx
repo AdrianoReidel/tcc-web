@@ -2,18 +2,16 @@
 import ExplorarPageContent from '@/components/Explorar/ExplorarPageContent';
 import { notFound } from 'next/navigation';
 
-type PageProps = {
-  params: any;
+type Params = {
+  tipo: string;
+  local: string;
 };
 
-export default async function Page({ params }: PageProps) {
-  // Lista de tipos de rota válidos
+export default async function Page({ params }: { params: Promise<Params> }) {
+
+  const {tipo, local} = await params;
   const validTypes = ['moradias', 'eventos', 'esportes'];
 
-  // Valida o tipo de rota, retorna 404 se inválido
-  if (!validTypes.includes(params.tipo)) {
-    notFound();
-  }
-
-  return <ExplorarPageContent tipoPesquisado={params.tipo} localPesquisado={params.local} />;
+  if (!validTypes.includes(tipo)) notFound();
+  return <ExplorarPageContent tipoPesquisado={tipo} localPesquisado={local} />;
 }

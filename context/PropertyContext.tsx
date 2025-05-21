@@ -105,6 +105,7 @@ interface PropertyContextType {
   findById: (id: string) => Promise<Property>;
   reserveProperty: (propertyId: string, reservation: ReservationData) => Promise<void>;
   getMyReservations: () => Promise<Reservation[]>;
+  createPropertyRating: (propertyId: string, rating: number, comment: string) => Promise<void>;
 }
 
 // Criar o contexto
@@ -357,10 +358,32 @@ export function PropertyProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const createPropertyRating = useCallback(
+    async (propertyId: string, rating: number, comment: string): Promise<void> => {
+      try {
+        const ratingData = {
+          propertyId,
+          rating,
+          comment,
+        };
+
+        await api.post(`/property/${propertyId}/rating`, ratingData, {
+          skipAuthRefresh: true,
+        });
+
+      } catch (error: any) {
+        console.error('Erro ao enviar avaliação:', error);
+        throw new Error(error.response?.data?.message || 'Erro ao enviar a avaliação.');
+      }
+    },
+    [router]
+  );
+
+
   return (
     <PropertyContext.Provider value={{ register, getAllProperties, searchProperties, 
     getPhotoDataById, getMyProperties, deleteProperty, addPhoto, removePhoto, getPhotosByPropertyId, 
-    getPhotosByPropertyIdSinglePage, updateProperty, findById, reserveProperty, getMyReservations }}>
+    getPhotosByPropertyIdSinglePage, updateProperty, findById, reserveProperty, getMyReservations, createPropertyRating }}>
       {children}
     </PropertyContext.Provider>
   );
