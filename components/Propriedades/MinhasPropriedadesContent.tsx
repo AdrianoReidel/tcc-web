@@ -24,17 +24,31 @@ export interface PropertyUpdateData {
   image?: File | null;
 }
 
+interface Review {
+  id: number;
+  reservationId: string;
+  authorName: string;
+  rating: number;
+  comment: string;
+  type: 'GUEST' | 'HOST';
+  createdAt: string;
+  checkIn: string;
+  checkOut: string;
+}
+
 export default function MinhasPropriedadesPage() {
-  const { getMyProperties, deleteProperty, addPhoto, removePhoto, getPhotosByPropertyId, updateProperty } = usePropertyContext();
+  const { getMyProperties, deleteProperty, addPhoto, removePhoto, getPhotosByPropertyId, updateProperty, getPropertyReviews } = usePropertyContext();
   const [properties, setProperties] = useState<PropertyListItem[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isManageModalOpen, setIsManageModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isReviewsModalOpen, setIsReviewsModalOpen] = useState(false);
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [photos, setPhotos] = useState<{ id: string; data: Blob; propertyId: string }[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [formData, setFormData] = useState<PropertyUpdateData>({
     title: '',
     pricePerUnit: 0,
@@ -120,6 +134,18 @@ export default function MinhasPropriedadesPage() {
       });
       setSelectedPropertyId(id);
       setIsEditModalOpen(true);
+    }
+  };
+
+  const handleReviewsClick = async (id: string) => {
+    setSelectedPropertyId(id);
+    try {
+      const reviewsData = await getPropertyReviews(id);
+      setReviews(reviewsData);
+      setIsReviewsModalOpen(true);
+    } catch (err: any) {
+      console.error('Erro ao carregar avaliações:', err);
+      setError(err.message || 'Erro ao carregar avaliações da propriedade.');
     }
   };
 
@@ -215,6 +241,12 @@ export default function MinhasPropriedadesPage() {
     photos.forEach((photo) => URL.revokeObjectURL(URL.createObjectURL(photo.data)));
   };
 
+  const handleCloseReviewsModal = () => {
+    setIsReviewsModalOpen(false);
+    setReviews([]);
+    setError(null);
+  };
+
   const handleDeletePhoto = async (photoId: string) => {
     try {
       await removePhoto(selectedPropertyId!, photoId);
@@ -231,6 +263,14 @@ export default function MinhasPropriedadesPage() {
 
   const removeFile = (index: number) => {
     setSelectedFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
+  };
+
+  const formatDate = (date: string) => {
+    return new Date(date).toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
   };
 
   return (
@@ -265,13 +305,13 @@ export default function MinhasPropriedadesPage() {
                     className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
                     onClick={() => handleEditPropertyClick(property.id)}
                   >
-                    Editar propriedade
+                    Editar
                   </button>
                   <button
                     className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition"
                     onClick={() => handleDelete(property.id)}
                   >
-                    Excluir propriedade
+                    Excluir
                   </button>
                   <button
                     className="px-1 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition"
@@ -285,14 +325,20 @@ export default function MinhasPropriedadesPage() {
                   >
                     Gerenciar Fotos
                   </button>
+                  <button
+                    className="px-3 py-1 bg-purple-500 text-white rounded hover:bg-purple-600 transition"
+                    onClick={() => handleReviewsClick(property.id)}
+                  >
+                    Avaliações
+                  </button>
                 </td>
               </tr>
             ))
           ) : (
             <tr>
               <td colSpan={6} className="border p-2 text-center">
-              Nenhuma propriedade encontrada
-            </td>
+                Nenhuma propriedade encontrada
+              </td>
             </tr>
           )}
         </tbody>
@@ -408,13 +454,13 @@ export default function MinhasPropriedadesPage() {
         </div>
       )}
 
-{isEditModalOpen && (
+      {isEditModalOpen && (
         <div
           className="fixed inset-0 bg-black/50 bg-opacity-30 flex items-center justify-center z-50"
           onClick={() => setIsEditModalOpen(false)}
         >
           <div
-            className="bg-white p-6 rounded-lg shadow-lg max-h-[75vh] mmax-w-3xl"
+            className="bg-white p-6 rounded-lg shadow-lg max-h-[75vh] max-w-3xl"
             onClick={(e) => e.stopPropagation()}
           >
             <h2 className="text-xl font-bold mb-4">Editar Propriedade</h2>
@@ -494,6 +540,54 @@ export default function MinhasPropriedadesPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {isReviewsModalOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 bg-opacity-30 flex items-center justify-center z-50"
+          onClick={handleCloseReviewsModal}
+        >
+          <div
+            className="bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl flex flex-col max-h-[80vh]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-xl font-bold mb-4">Avaliações - {properties.find(p => p.id === selectedPropertyId)?.title}</h2>
+            {reviews.length > 0 ? (
+              <div className="overflow-y-auto max-h-[60vh]">
+                <table className="w-full border-collapse border border-gray-300">
+                  <thead className="bg-gray-100">
+                    <tr>
+                      <th className="border p-2 text-left">Autor</th>
+                      <th className="border p-2 text-left">Nota</th>
+                      <th className="border p-2 text-left">Comentário</th>
+                      <th className="border p-2 text-left">Data</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {reviews.map((review) => (
+                      <tr key={review.id} className="hover:bg-gray-50">
+                        <td className="border p-2">{review.authorName}</td>
+                        <td className="border p-2">{review.rating} ★</td>
+                        <td className="border p-2">{review.comment}</td>
+                        <td className="border p-2">{formatDate(review.createdAt)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="text-center">Nenhuma avaliação encontrada para esta propriedade.</p>
+            )}
+            <div className="flex justify-end mt-4">
+              <button
+                className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+                onClick={handleCloseReviewsModal}
+              >
+                Fechar
+              </button>
+            </div>
           </div>
         </div>
       )}

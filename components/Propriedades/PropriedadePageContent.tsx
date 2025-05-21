@@ -24,15 +24,28 @@ interface Property {
   reservations: { checkIn: Date; checkOut: Date; selectedTime: number }[];
 }
 
+interface Review {
+  id: number;
+  reservationId: string;
+  authorName: string;
+  rating: number;
+  comment: string;
+  type: 'GUEST' | 'HOST';
+  createdAt: string;
+  checkIn: string;
+  checkOut: string;
+}
+
 interface PropriedadePageContentProps {
   id: string;
 }
 
 export default function MinhasPropriedadesPage({ id }: PropriedadePageContentProps) {
-  const { findById, getPhotosByPropertyIdSinglePage, reserveProperty } = usePropertyContext();
+  const { findById, getPhotosByPropertyIdSinglePage, reserveProperty, getPropertyReviews } = usePropertyContext();
   const [property, setProperty] = useState<Property | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [photos, setPhotos] = useState<{ id: string; data: Blob; propertyId: string }[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
   const [selectedTime, setSelectedTime] = useState<string>('');
@@ -60,19 +73,23 @@ export default function MinhasPropriedadesPage({ id }: PropriedadePageContentPro
   const minDate = today.toISOString().split('T')[0];
 
   useEffect(() => {
-    const fetchProperty = async () => {
+    const fetchPropertyAndReviews = async () => {
       try {
-        const data = await findById(id);
-        const photosData = await getPhotosByPropertyIdSinglePage(id);
-        setProperty(data);
+        const [propertyData, photosData, reviewsData] = await Promise.all([
+          findById(id),
+          getPhotosByPropertyIdSinglePage(id),
+          getPropertyReviews(id),
+        ]);
+        setProperty(propertyData);
         setPhotos(photosData);
+        setReviews(reviewsData);
       } catch (err: any) {
-        console.error('Erro ao buscar propriedade:', err);
-        setError(err.message || 'Erro ao carregar os detalhes da propriedade.');
+        console.error('Erro ao buscar dados:', err);
+        setError(err.message || 'Erro ao carregar os detalhes da propriedade ou avaliações.');
       }
     };
-    fetchProperty();
-  }, [id, findById, getPhotosByPropertyIdSinglePage]);
+    fetchPropertyAndReviews();
+  }, [id, findById, getPhotosByPropertyIdSinglePage, getPropertyReviews]);
 
   useEffect(() => {
     if (property && startDate && endDate && property.type !== 'SPORTS') {
@@ -138,6 +155,14 @@ export default function MinhasPropriedadesPage({ id }: PropriedadePageContentPro
         .map(res => res.selectedTime)
     : [];
 
+  const formatDate = (date: string) => {
+    return new Date(date).toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
+  };
+
   return (
     <div className="w-full flex flex-col min-h-screen bg-white text-black pt-20 pb-10 px-8 md:px-20">
       <div className="space-y-4 mb-6">
@@ -183,7 +208,7 @@ export default function MinhasPropriedadesPage({ id }: PropriedadePageContentPro
         </p>
       </div>
 
-      <div className="w-full bg-gray-100 p-4 shadow-md">
+      <div className="w-full bg-gray-100 p-4 shadow-md mb-8">
         <div className="flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-4">
           {property.type !== 'SPORTS' ? (
             <div className="flex flex-row space-x-4">
@@ -257,6 +282,35 @@ export default function MinhasPropriedadesPage({ id }: PropriedadePageContentPro
             Alugar
           </button>
         </div>
+      </div>
+
+      <div className="mt-8">
+        <h2 className="text-2xl font-bold text-left mb-4">Avaliações</h2>
+        {reviews.length > 0 ? (
+          <div className="space-y-6">
+            {reviews.map((review) => (
+              <div key={review.id} className="border-b border-gray-200 pb-4">
+                <div className="flex items-center space-x-2">
+                  <p className="font-semibold">{review.authorName}</p>
+                  <div className="flex">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <span
+                        key={star}
+                        className={`text-lg ${review.rating >= star ? 'text-yellow-400' : 'text-gray-300'}`}
+                      >
+                        ★
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <p className="text-gray-600 mt-1">{review.comment}</p>
+                <p className="text-sm text-gray-500 mt-1">{formatDate(review.createdAt)}</p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-gray-600">Nenhuma avaliação disponível para esta propriedade.</p>
+        )}
       </div>
     </div>
   );

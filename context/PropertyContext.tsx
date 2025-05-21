@@ -89,6 +89,18 @@ interface ReservationData {
   selectedTime?: string | null;
 }
 
+interface ReviewResponseDto {
+  id: number;
+  reservationId: string;
+  authorName: string;
+  rating: number;
+  comment: string;
+  type: 'GUEST' | 'HOST';
+  createdAt: string;
+  checkIn: string;
+  checkOut: string;
+}
+
 // Definir o tipo do contexto
 interface PropertyContextType {
   register: (dados: PropertyData) => Promise<void>;
@@ -106,6 +118,7 @@ interface PropertyContextType {
   reserveProperty: (propertyId: string, reservation: ReservationData) => Promise<void>;
   getMyReservations: () => Promise<Reservation[]>;
   createPropertyRating: (propertyId: string, rating: number, comment: string) => Promise<void>;
+  getPropertyReviews: (propertyId: string) => Promise<ReviewResponseDto[]>;
 }
 
 // Criar o contexto
@@ -379,11 +392,26 @@ export function PropertyProvider({ children }: { children: React.ReactNode }) {
     [router]
   );
 
+  const getPropertyReviews = useCallback(
+    async (propertyId: string): Promise<ReviewResponseDto[]> => {
+      try {
+        const response = await api.get(`/property/${propertyId}/reviews`, {
+          skipAuthRefresh: true,
+        });
+        return response.data.data;
+      } catch (error: any) {
+        console.error('Erro ao buscar avaliações:', error);
+        throw new Error(error.response?.data?.message || 'Erro ao buscar avaliações.');
+      }
+    },
+    []
+  );
 
   return (
     <PropertyContext.Provider value={{ register, getAllProperties, searchProperties, 
     getPhotoDataById, getMyProperties, deleteProperty, addPhoto, removePhoto, getPhotosByPropertyId, 
-    getPhotosByPropertyIdSinglePage, updateProperty, findById, reserveProperty, getMyReservations, createPropertyRating }}>
+    getPhotosByPropertyIdSinglePage, updateProperty, findById, reserveProperty, getMyReservations, 
+    createPropertyRating, getPropertyReviews }}>
       {children}
     </PropertyContext.Provider>
   );
