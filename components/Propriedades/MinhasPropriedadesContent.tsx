@@ -36,8 +36,22 @@ interface Review {
   checkOut: string;
 }
 
+
+interface Reservation {
+  id?: string;
+  propertyId?: string;
+  propertyTitle?: string;
+  propertyType?: string;
+  checkIn: Date;
+  checkOut: Date;
+  selectedTime: number;
+  totalPrice?: number;
+  status?: string;
+  guestName?: string;
+}
+
 export default function MinhasPropriedadesPage() {
-  const { getMyProperties, deleteProperty, addPhoto, removePhoto, getPhotosByPropertyId, updateProperty, getPropertyReviews } = usePropertyContext();
+  const { getMyProperties, deleteProperty, addPhoto, removePhoto, getPhotosByPropertyId, updateProperty, getPropertyReviews, getReservationsByPropertyId } = usePropertyContext();
   const [properties, setProperties] = useState<PropertyListItem[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -45,10 +59,12 @@ export default function MinhasPropriedadesPage() {
   const [isManageModalOpen, setIsManageModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isReviewsModalOpen, setIsReviewsModalOpen] = useState(false);
+  const [isReservationsModalOpen, setIsReservationsModalOpen] = useState(false);
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [photos, setPhotos] = useState<{ id: string; data: Blob; propertyId: string }[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [reservations, setReservations] = useState<Reservation[]>([]);
   const [formData, setFormData] = useState<PropertyUpdateData>({
     title: '',
     pricePerUnit: 0,
@@ -265,7 +281,38 @@ export default function MinhasPropriedadesPage() {
     setSelectedFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
   };
 
+  const handleReservationsClick = async (id: string) => {
+    setSelectedPropertyId(id);
+    try {
+      const reservationsData = await getReservationsByPropertyId(id);
+      setReservations(reservationsData);
+      setIsReservationsModalOpen(true);
+    } catch (err: any) {
+      console.error('Erro ao carregar reservas:', err);
+      setError(err.message || 'Erro ao carregar reservas da propriedade.');
+    }
+  };
+
+  const handleCloseReservationsModal = () => {
+    setIsReservationsModalOpen(false);
+    setReservations([]);
+    setError(null);
+  };
+
+  const formatTime = (hour: number) => {
+    if (hour === 0) return 'N/A';
+    return `${hour.toString().padStart(2, '0')}:00`;
+  };
+
   const formatDate = (date: string) => {
+    return new Date(date).toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
+  };
+
+  const formatDateReserve = (date: Date) => {
     return new Date(date).toLocaleDateString('pt-BR', {
       day: '2-digit',
       month: '2-digit',
@@ -330,6 +377,12 @@ export default function MinhasPropriedadesPage() {
                     onClick={() => handleReviewsClick(property.id)}
                   >
                     Avaliações
+                  </button>
+                  <button
+                    className="px-3 py-1 bg-teal-500 text-white rounded hover:bg-teal-600 transition"
+                    onClick={() => handleReservationsClick(property.id)}
+                  >
+                    Ver Reservas
                   </button>
                 </td>
               </tr>
@@ -591,6 +644,56 @@ export default function MinhasPropriedadesPage() {
           </div>
         </div>
       )}
+
+      {isReservationsModalOpen && (
+  <div
+    className="fixed inset-0 bg-black/50 bg-opacity-30 flex items-center justify-center z-50"
+    onClick={handleCloseReservationsModal}
+  >
+    <div
+      className="bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl flex flex-col max-h-[80vh]"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <h2 className="text-xl font-bold mb-4">Reservas - {properties.find(p => p.id === selectedPropertyId)?.title}</h2>
+      {reservations.length > 0 ? (
+        <div className="overflow-y-auto max-h-[60vh]">
+          <table className="w-full border-collapse border border-gray-300">
+            <thead className="bg-gray-100">
+              <tr>
+                <th className="border p-2 text-left">Hóspede</th>
+                <th className="border p-2 text-left">Check-in</th>
+                <th className="border p-2 text-left">Check-out</th>
+                <th className="border p-2 text-left">Horário</th>
+                <th className="border p-2 text-left">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {reservations.map((reservation) => (
+                <tr key={reservation.id} className="hover:bg-gray-50">
+                  <td className="border p-2">{reservation.guestName || 'Desconhecido'}</td>
+                  <td className="border p-2">{formatDateReserve(reservation.checkIn)}</td>
+                  <td className="border p-2">{reservation.checkOut ? formatDateReserve(reservation.checkOut) : '-'}</td>
+                  <td className="border p-2">{reservation.selectedTime ? formatTime(reservation.selectedTime) : '-'}</td>
+                  <td className="border p-2">{reservation.status}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <p className="text-center">Nenhuma reserva encontrada para esta propriedade.</p>
+      )}
+      <div className="flex justify-end mt-4">
+        <button
+          className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+          onClick={handleCloseReservationsModal}
+        >
+          Fechar
+        </button>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 }

@@ -64,7 +64,7 @@ export default function ExplorarPageContent({ tipoPesquisado, localPesquisado }:
         // Mapear os dados para o formato esperado pelo PropertyCarousel
         const mappedProperties = await Promise.all(
           propertiesData.map(async (property: any) => {
-            let imageUrl = '/images/default.png'; // Imagem padrão como fallback
+            let imageUrl = '/images/casa1.png'; // Imagem padrão como fallback
   
             if (property.photoId) {
               try {

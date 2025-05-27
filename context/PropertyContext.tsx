@@ -117,6 +117,7 @@ interface PropertyContextType {
   findById: (id: string) => Promise<Property>;
   reserveProperty: (propertyId: string, reservation: ReservationData) => Promise<void>;
   getMyReservations: () => Promise<Reservation[]>;
+  getReservationsByPropertyId: (propertyId: string) => Promise<Reservation[]>;
   createPropertyRating: (propertyId: string, rating: number, comment: string) => Promise<void>;
   getPropertyReviews: (propertyId: string) => Promise<ReviewResponseDto[]>;
 }
@@ -370,6 +371,18 @@ export function PropertyProvider({ children }: { children: React.ReactNode }) {
       throw new Error(error.response?.data?.message || 'Erro ao buscar reservas do usuário.');
     }
   }, []);
+ 
+  const getReservationsByPropertyId = useCallback(async (propertyId: string): Promise<Reservation[]> => {
+    try {
+      const response = await api.get(`/property/${propertyId}/reservations`, {
+        skipAuthRefresh: true,
+      });
+      return response.data.data;
+    } catch (error: any) {
+      console.error('Erro ao buscar reservas da propriedade:', error);
+      throw new Error(error.response?.data?.message || 'Erro ao buscar reservas da propriedade.');
+    }
+  }, []);
 
   const createPropertyRating = useCallback(
     async (propertyId: string, rating: number, comment: string): Promise<void> => {
@@ -411,7 +424,7 @@ export function PropertyProvider({ children }: { children: React.ReactNode }) {
     <PropertyContext.Provider value={{ register, getAllProperties, searchProperties, 
     getPhotoDataById, getMyProperties, deleteProperty, addPhoto, removePhoto, getPhotosByPropertyId, 
     getPhotosByPropertyIdSinglePage, updateProperty, findById, reserveProperty, getMyReservations, 
-    createPropertyRating, getPropertyReviews }}>
+    createPropertyRating, getPropertyReviews, getReservationsByPropertyId}}>
       {children}
     </PropertyContext.Provider>
   );

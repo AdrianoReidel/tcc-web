@@ -1,5 +1,4 @@
 import Image from 'next/image';
-import { useRouter } from 'next/navigation'; 
 
 interface PropertyCardProps {
   id: string;
@@ -10,10 +9,8 @@ interface PropertyCardProps {
 }
 
 const PropertyCard = ({ id, image, name, location, price }: PropertyCardProps) => {
-  const router = useRouter();
-
   const handleCardClick = () => {
-    router.push(`/propriedade/${id}`);
+    window.open(`/propriedade/${id}`, '_blank');
   };
 
   return (
