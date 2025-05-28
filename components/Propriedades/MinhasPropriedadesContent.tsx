@@ -36,7 +36,6 @@ interface Review {
   checkOut: string;
 }
 
-
 interface Reservation {
   id?: string;
   propertyId?: string;
@@ -48,10 +47,11 @@ interface Reservation {
   totalPrice?: number;
   status?: string;
   guestName?: string;
+  guestId?: string;
 }
 
 export default function MinhasPropriedadesPage() {
-  const { getMyProperties, deleteProperty, addPhoto, removePhoto, getPhotosByPropertyId, updateProperty, getPropertyReviews, getReservationsByPropertyId } = usePropertyContext();
+  const { getMyProperties, deleteProperty, addPhoto, removePhoto, getPhotosByPropertyId, updateProperty, getPropertyReviews, getReservationsByPropertyId, createGuestRating } = usePropertyContext();
   const [properties, setProperties] = useState<PropertyListItem[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -318,6 +318,86 @@ export default function MinhasPropriedadesPage() {
       month: '2-digit',
       year: 'numeric',
     });
+  };
+
+  const RatingModal: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (rating: number, comment: string, propertyId?: string, guestId?: string) => void;
+  propertyTitle?: string;
+  propertyId?: string;
+  }> = ({ isOpen, onClose, onSubmit, propertyTitle, propertyId }) => {
+    const [rating, setRating] = useState<number>(0);
+    const [comment, setComment] = useState<string>('');
+
+    const handleSubmit = () => {
+      onSubmit(rating, comment, propertyId, selectedReservation?.guestId);
+      setRating(0);
+      setComment('');
+      onClose();
+    };
+
+    if (!isOpen) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+          <h2 className="text-xl font-bold mb-4">Avaliar {propertyTitle}</h2>
+          <div className="flex mb-4">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <button
+                key={star}
+                onClick={() => setRating(star)}
+                className={`text-2xl ${rating >= star ? 'text-yellow-400' : 'text-gray-300'}`}
+              >
+                ★
+              </button>
+            ))}
+          </div>
+          <textarea
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            placeholder="Deixe seu comentário..."
+            className="w-full p-2 border rounded mb-4"
+            rows={4}
+          />
+          <div className="flex justify-end gap-2">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={handleSubmit}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              disabled={rating === 0}
+            >
+              Enviar Avaliação
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const handleRatingSubmit = async (rating: number, comment: string, propertyId?: string, guestId?: string) => {
+    try {
+      if (!propertyId) throw new Error('ID da propriedade não encontrado');
+      await createGuestRating(propertyId, guestId, rating, comment);
+      console.log(`Avaliação enviada para ${selectedReservation?.propertyTitle}: ${rating} estrelas, Comentário: ${comment}`);
+    } catch (err: any) {
+      console.error('Erro ao enviar avaliação:', err);
+      setError(err.message || 'Erro ao enviar avaliação');
+    }
+  };
+
+  const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
+  const [isModalReviewOpen, setIsModalReviewOpen] = useState<boolean>(false);
+
+  const handleRateClick = (reservation: Reservation) => {
+    setSelectedReservation(reservation);
+    setIsModalReviewOpen(true);
   };
 
   return (
@@ -646,54 +726,78 @@ export default function MinhasPropriedadesPage() {
       )}
 
       {isReservationsModalOpen && (
-  <div
-    className="fixed inset-0 bg-black/50 bg-opacity-30 flex items-center justify-center z-50"
-    onClick={handleCloseReservationsModal}
-  >
-    <div
-      className="bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl flex flex-col max-h-[80vh]"
-      onClick={(e) => e.stopPropagation()}
-    >
-      <h2 className="text-xl font-bold mb-4">Reservas - {properties.find(p => p.id === selectedPropertyId)?.title}</h2>
-      {reservations.length > 0 ? (
-        <div className="overflow-y-auto max-h-[60vh]">
-          <table className="w-full border-collapse border border-gray-300">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="border p-2 text-left">Hóspede</th>
-                <th className="border p-2 text-left">Check-in</th>
-                <th className="border p-2 text-left">Check-out</th>
-                <th className="border p-2 text-left">Horário</th>
-                <th className="border p-2 text-left">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {reservations.map((reservation) => (
-                <tr key={reservation.id} className="hover:bg-gray-50">
-                  <td className="border p-2">{reservation.guestName || 'Desconhecido'}</td>
-                  <td className="border p-2">{formatDateReserve(reservation.checkIn)}</td>
-                  <td className="border p-2">{reservation.checkOut ? formatDateReserve(reservation.checkOut) : '-'}</td>
-                  <td className="border p-2">{reservation.selectedTime ? formatTime(reservation.selectedTime) : '-'}</td>
-                  <td className="border p-2">{reservation.status}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : (
-        <p className="text-center">Nenhuma reserva encontrada para esta propriedade.</p>
-      )}
-      <div className="flex justify-end mt-4">
-        <button
-          className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+        <div
+          className="fixed inset-0 bg-black/50 bg-opacity-30 flex items-center justify-center z-50"
           onClick={handleCloseReservationsModal}
         >
-          Fechar
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+          <div
+            className="bg-white p-6 rounded-lg shadow-lg w-full max-w-4xl flex flex-col max-h-[130vh]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-xl font-bold mb-4">Reservas - {properties.find(p => p.id === selectedPropertyId)?.title}</h2>
+            {reservations.length > 0 ? (
+              <div className="overflow-y-auto max-h-[60vh]">
+                <table className="w-full border-collapse border border-gray-300">
+                  <thead className="bg-gray-100">
+                    <tr>
+                      <th className="border p-2 text-left">Hóspede</th>
+                      <th className="border p-2 text-left">Avaliações</th>
+                      <th className="border p-2 text-left">Check-in</th>
+                      <th className="border p-2 text-left">Check-out</th>
+                      <th className="border p-2 text-left">Horário</th>
+                      <th className="border p-2 text-left">Status</th>
+                      <th className="border p-2 text-left">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {reservations.map((reservation) => (
+                      <tr key={reservation.id} className="hover:bg-gray-50">
+                        <td className="border p-2">{reservation.guestName || 'Desconhecido'}</td>
+                        <td className="border p-2">
+                          <button
+                            className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                          >
+                            Ver 
+                          </button>
+                        </td>
+                        <td className="border p-2">{formatDateReserve(reservation.checkIn)}</td>
+                        <td className="border p-2">{reservation.checkOut ? formatDateReserve(reservation.checkOut) : '-'}</td>
+                        <td className="border p-2">{reservation.selectedTime ? formatTime(reservation.selectedTime) : '-'}</td>
+                        <td className="border p-2">{reservation.status}</td>
+                        <td className="border p-2">
+                          <button
+                            onClick={() => handleRateClick(reservation)}
+                            className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                          >
+                            Avaliar
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="text-center">Nenhuma reserva encontrada para esta propriedade.</p>
+            )}
+            <div className="flex justify-end mt-4">
+              <button
+                className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+                onClick={handleCloseReservationsModal}
+              >
+                Fechar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      <RatingModal
+        isOpen={isModalReviewOpen}
+        onClose={() => setIsModalReviewOpen(false)}
+        onSubmit={handleRatingSubmit}
+        propertyTitle={selectedReservation?.guestName}
+        propertyId={selectedReservation?.propertyId}
+      />
     </div>
   );
 }

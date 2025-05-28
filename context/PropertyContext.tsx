@@ -61,6 +61,8 @@ interface Reservation {
   selectedTime: number;
   totalPrice?: number;
   status?: string;
+  guestId?: string;
+  guestName?: string;
 }
 
 interface Property {
@@ -120,6 +122,7 @@ interface PropertyContextType {
   getReservationsByPropertyId: (propertyId: string) => Promise<Reservation[]>;
   createPropertyRating: (propertyId: string, rating: number, comment: string) => Promise<void>;
   getPropertyReviews: (propertyId: string) => Promise<ReviewResponseDto[]>;
+  createGuestRating: (propertyId: string, guestId?: string, rating?: number, comment?: string) => Promise<void>;
 }
 
 // Criar o contexto
@@ -405,6 +408,28 @@ export function PropertyProvider({ children }: { children: React.ReactNode }) {
     [router]
   );
 
+  const createGuestRating = useCallback(
+    async (propertyId: string, guestId?: string, rating?: number, comment?: string): Promise<void> => {
+      try {
+        const ratingData = {
+          propertyId,
+          guestId,
+          rating,
+          comment,
+        };
+
+        await api.post(`/property/${guestId}/ratingGuest`, ratingData, {
+          skipAuthRefresh: true,
+        });
+
+      } catch (error: any) {
+        console.error('Erro ao enviar avaliação:', error);
+        throw new Error(error.response?.data?.message || 'Erro ao enviar a avaliação.');
+      }
+    },
+    [router]
+  );
+
   const getPropertyReviews = useCallback(
     async (propertyId: string): Promise<ReviewResponseDto[]> => {
       try {
@@ -424,7 +449,7 @@ export function PropertyProvider({ children }: { children: React.ReactNode }) {
     <PropertyContext.Provider value={{ register, getAllProperties, searchProperties, 
     getPhotoDataById, getMyProperties, deleteProperty, addPhoto, removePhoto, getPhotosByPropertyId, 
     getPhotosByPropertyIdSinglePage, updateProperty, findById, reserveProperty, getMyReservations, 
-    createPropertyRating, getPropertyReviews, getReservationsByPropertyId}}>
+    createPropertyRating, getPropertyReviews, getReservationsByPropertyId, createGuestRating}}>
       {children}
     </PropertyContext.Provider>
   );
