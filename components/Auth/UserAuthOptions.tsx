@@ -33,6 +33,11 @@ export default function UserAuthOptionsDropdown({ onClose }: AuthModalProps) {
     if (onClose) onClose();
   };
 
+  const handleOpenConfig = () => {
+    router.push(`/minha-conta`);
+    if (onClose) onClose();
+  };
+
   return (
     <div className="absolute right-0 top-full mt-2 z-[1000]">
       <div 
@@ -53,7 +58,14 @@ export default function UserAuthOptionsDropdown({ onClose }: AuthModalProps) {
           >
             Minhas propriedades
           </button>
-          
+
+          <button
+            className="w-full text-left px-3 py-2 text-[#667085] text-sm font-normal leading-[21px] hover:bg-gray-100 rounded-md transition-colors"
+            onClick={handleOpenConfig}
+          >
+            Minha conta
+          </button>
+
           <button
             className="w-full text-left px-3 py-2 text-[#667085] text-sm font-normal leading-[21px] hover:bg-gray-100 rounded-md transition-colors"
             onClick={handleLogout}

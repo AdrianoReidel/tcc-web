@@ -103,6 +103,13 @@ interface ReviewResponseDto {
   checkOut: string;
 }
 
+interface Account {
+  id: number;
+  name: string;
+  email: string;
+  createdAt: Date;
+}
+
 // Definir o tipo do contexto
 interface PropertyContextType {
   register: (dados: PropertyData) => Promise<void>;
@@ -123,6 +130,8 @@ interface PropertyContextType {
   createPropertyRating: (propertyId: string, rating: number, comment: string) => Promise<void>;
   getPropertyReviews: (propertyId: string) => Promise<ReviewResponseDto[]>;
   createGuestRating: (propertyId: string, guestId?: string, rating?: number, comment?: string) => Promise<void>;
+  getMyAccount: () => Promise<Account>;
+  deleteMyAccount: () => Promise<void>;
 }
 
 // Criar o contexto
@@ -445,11 +454,39 @@ export function PropertyProvider({ children }: { children: React.ReactNode }) {
     []
   );
 
+  const getMyAccount = useCallback( async (): Promise<Account> => {
+      try {
+        const response = await api.get(`/user/me`, {
+          skipAuthRefresh: true,
+        });
+        return response.data.data;
+      } catch (error: any) {
+        console.error('Erro ao buscar avaliações:', error);
+        throw new Error(error.response?.data?.message || 'Erro ao buscar avaliações.');
+      }
+    },
+    []
+  );
+
+  const deleteMyAccount = useCallback( async (): Promise<void> => {
+      try {
+        await api.delete(`/user`, {
+          skipAuthRefresh: true,
+        });
+      } catch (error: any) {
+        console.error('Erro ao buscar avaliações:', error);
+        throw new Error(error.response?.data?.message || 'Erro ao buscar avaliações.');
+      }
+    },
+    []
+  );
+
   return (
     <PropertyContext.Provider value={{ register, getAllProperties, searchProperties, 
     getPhotoDataById, getMyProperties, deleteProperty, addPhoto, removePhoto, getPhotosByPropertyId, 
     getPhotosByPropertyIdSinglePage, updateProperty, findById, reserveProperty, getMyReservations, 
-    createPropertyRating, getPropertyReviews, getReservationsByPropertyId, createGuestRating}}>
+    createPropertyRating, getPropertyReviews, getReservationsByPropertyId, createGuestRating, getMyAccount,
+    deleteMyAccount }}>
       {children}
     </PropertyContext.Provider>
   );
