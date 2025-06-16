@@ -17,8 +17,8 @@ export default async function middleware(req: NextRequest) {
   }
 
   const roleBasedRoutes: Record<string, string[]> = {
-    '/minhas-propriedades': ['HOST'],
-    '/minhas-reservas': ['GUEST'],
+    '/minhas-propriedades': ['HOST', 'ADMIN'],
+    '/minhas-reservas': ['GUEST', 'ADMIN'],
   };
 
   const cookieStore = cookies();
@@ -33,6 +33,6 @@ export default async function middleware(req: NextRequest) {
       return NextResponse.redirect(new URL('/unauthorized', req.nextUrl));
     }
   }
-  
+
   return NextResponse.next();
 }
